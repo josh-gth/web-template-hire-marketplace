@@ -23,6 +23,10 @@ import {
 // Import modules from this directory
 import css from './EditListingDetailsForm.module.css';
 
+//Hire Marketplace
+import ProductSelection from '../ProductSelection';
+
+
 const TITLE_MAX_LENGTH = 60;
 
 // Show various error messages
@@ -255,17 +259,17 @@ const AddListingFields = props => {
 
     return isKnownSchemaType && isProviderScope && isTargetListingType && isTargetCategory
       ? [
-          ...pickedFields,
-          <CustomExtendedDataField
-            key={namespacedKey}
-            name={namespacedKey}
-            fieldConfig={fieldConfig}
-            defaultRequiredMessage={intl.formatMessage({
-              id: 'EditListingDetailsForm.defaultRequiredMessage',
-            })}
-            formId={formId}
-          />,
-        ]
+        ...pickedFields,
+        <CustomExtendedDataField
+          key={namespacedKey}
+          name={namespacedKey}
+          fieldConfig={fieldConfig}
+          defaultRequiredMessage={intl.formatMessage({
+            id: 'EditListingDetailsForm.defaultRequiredMessage',
+          })}
+          formId={formId}
+        />,
+      ]
       : pickedFields;
   }, []);
 
@@ -355,6 +359,15 @@ const EditListingDetailsFormComponent = props => (
               intl={intl}
               allCategoriesChosen={allCategoriesChosen}
               setAllCategoriesChosen={setAllCategoriesChosen}
+            />
+          ) : null}
+
+
+          {showListingFields ? (
+            <ProductSelection
+              onProductSelect={handleProductSelect}
+              productId={productId}
+              productFamily={productFamily}
             />
           ) : null}
 
