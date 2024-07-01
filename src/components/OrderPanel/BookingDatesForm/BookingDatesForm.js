@@ -22,7 +22,7 @@ import {
 import { LINE_ITEM_DAY, LINE_ITEM_NIGHT, TIME_SLOT_TIME, propTypes } from '../../../util/types';
 import { BOOKING_PROCESS_NAME } from '../../../transactions/transaction';
 
-import { Form, IconArrowHead, PrimaryButton, FieldDateRangeInput, H6 } from '../../../components';
+import { Form, IconArrowHead, PrimaryButton, FieldDateRangeInput, H6, FieldCheckbox } from '../../../components';
 
 import EstimatedCustomerBreakdownMaybe from '../EstimatedCustomerBreakdownMaybe';
 
@@ -373,18 +373,28 @@ const handleFormSpyChange = (
 ) => formValues => {
   const { startDate, endDate } =
     formValues.values && formValues.values.bookingDates ? formValues.values.bookingDates : {};
+  const includeSaturday = formValues.values ? formValues.values.includeSaturday : false;
+  const includeSunday = formValues.values ? formValues.values.includeSunday : false;
 
   if (startDate && endDate && !fetchLineItemsInProgress) {
+    const adjustedEndDate = new Date(endDate);
+    adjustedEndDate.setDate(adjustedEndDate.getDate() - 1); // Adjust the end date
+
+    console.log('FormSpy Start Date:', startDate);
+    console.log('FormSpy End Date:', adjustedEndDate);
     onFetchTransactionLineItems({
       orderData: {
         bookingStart: startDate,
-        bookingEnd: endDate,
+        bookingEnd: adjustedEndDate,
+        includeSaturday,
+        includeSunday,
       },
       listingId,
       isOwnListing,
     });
   }
 };
+
 
 // IconArrowHead component might not be defined if exposed directly to the file.
 // This component is called before IconArrowHead component in components/index.js
@@ -486,9 +496,9 @@ export const BookingDatesFormComponent = props => {
         const breakdownData =
           startDate && endDate
             ? {
-                startDate,
-                endDate,
-              }
+              startDate,
+              endDate,
+            }
             : null;
 
         const showEstimatedBreakdown =
@@ -610,7 +620,20 @@ export const BookingDatesFormComponent = props => {
                 setCurrentMonth(getStartOf(event?.startDate ?? startOfToday, 'month', timeZone))
               }
             />
-
+            <div className={css.extraOptions} style={{ marginTop: 24 }}>
+              <FieldCheckbox
+                id="includeSaturday"
+                name="includeSaturday"
+                label="Include Saturdays"
+                value="includeSaturday"
+              />
+              <FieldCheckbox
+                id="includeSunday"
+                name="includeSunday"
+                label="Include Sundays"
+                value="includeSunday"
+              />
+            </div>
             {showEstimatedBreakdown ? (
               <div className={css.priceBreakdownContainer}>
                 <H6 as="h3" className={css.bookingBreakdownTitle}>

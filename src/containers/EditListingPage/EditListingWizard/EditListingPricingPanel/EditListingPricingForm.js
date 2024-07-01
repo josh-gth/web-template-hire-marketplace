@@ -99,7 +99,70 @@ export const EditListingPricingFormComponent = props => (
             currencyConfig={appSettings.getCurrencyFormatting(marketplaceCurrency)}
             validate={priceValidators}
           />
-
+          <FieldTextInput
+            id={`${formId}discountThreshold1`}
+            name="discountThreshold1"
+            className={css.input}
+            label={intl.formatMessage({ id: 'EditListingPricingForm.discountThreshold1' })}
+            type="number"
+            placeholder={intl.formatMessage({ id: 'EditListingPricingForm.discountThresholdPlaceholder' })}
+          />
+          <FieldTextInput
+            id={`${formId}discountPercentage1`}
+            name="discountPercentage1"
+            className={css.input}
+            label={intl.formatMessage({ id: 'EditListingPricingForm.discountPercentage1' })}
+            type="number"
+            placeholder={intl.formatMessage({ id: 'EditListingPricingForm.discountPercentagePlaceholder' })}
+          />
+          <FieldTextInput
+            id={`${formId}discountThreshold2`}
+            name="discountThreshold2"
+            className={css.input}
+            label={intl.formatMessage({ id: 'EditListingPricingForm.discountThreshold2' })}
+            type="number"
+            placeholder={intl.formatMessage({ id: 'EditListingPricingForm.discountThresholdPlaceholder' })}
+          />
+          <FieldTextInput
+            id={`${formId}discountPercentage2`}
+            name="discountPercentage2"
+            className={css.input}
+            label={intl.formatMessage({ id: 'EditListingPricingForm.discountPercentage2' })}
+            type="number"
+            placeholder={intl.formatMessage({ id: 'EditListingPricingForm.discountPercentagePlaceholder' })}
+          />
+          <FieldTextInput
+            id={`${formId}discountThreshold3`}
+            name="discountThreshold3"
+            className={css.input}
+            label={intl.formatMessage({ id: 'EditListingPricingForm.discountThreshold3' })}
+            type="number"
+            placeholder={intl.formatMessage({ id: 'EditListingPricingForm.discountThresholdPlaceholder' })}
+          />
+          <FieldTextInput
+            id={`${formId}discountPercentage3`}
+            name="discountPercentage3"
+            className={css.input}
+            label={intl.formatMessage({ id: 'EditListingPricingForm.discountPercentage3' })}
+            type="number"
+            placeholder={intl.formatMessage({ id: 'EditListingPricingForm.discountPercentagePlaceholder' })}
+          />
+          <FieldTextInput
+            id={`${formId}discountThreshold4`}
+            name="discountThreshold4"
+            className={css.input}
+            label={intl.formatMessage({ id: 'EditListingPricingForm.discountThreshold4' })}
+            type="number"
+            placeholder={intl.formatMessage({ id: 'EditListingPricingForm.discountThresholdPlaceholder' })}
+          />
+          <FieldTextInput
+            id={`${formId}discountPercentage4`}
+            name="discountPercentage4"
+            className={css.input}
+            label={intl.formatMessage({ id: 'EditListingPricingForm.discountPercentage4' })}
+            type="number"
+            placeholder={intl.formatMessage({ id: 'EditListingPricingForm.discountPercentagePlaceholder' })}
+          />
           <Button
             className={css.submitButton}
             type="submit"

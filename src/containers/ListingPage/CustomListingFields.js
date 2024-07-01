@@ -1,13 +1,10 @@
 import React from 'react';
-
-// Utils
 import { SCHEMA_TYPE_MULTI_ENUM, SCHEMA_TYPE_TEXT } from '../../util/types';
 import {
   isFieldForCategory,
   pickCategoryFields,
   pickCustomFieldProps,
 } from '../../util/fieldHelpers.js';
-
 import SectionDetailsMaybe from './SectionDetailsMaybe';
 import SectionMultiEnumMaybe from './SectionMultiEnumMaybe';
 import SectionTextMaybe from './SectionTextMaybe';
@@ -32,6 +29,7 @@ const CustomListingFields = props => {
     const isTargetCategory = isFieldForCategory(currentCategories, fieldConfig);
     return isTargetCategory;
   };
+
   const propsForCustomFields =
     pickCustomFieldProps(
       publicData,
@@ -41,15 +39,25 @@ const CustomListingFields = props => {
       isFieldForSelectedCategories
     ) || [];
 
+  const shouldHideField = key => key === 'product_family' || key === 'product_id';
+
   return (
     <>
-      <SectionDetailsMaybe {...props} isFieldForCategory={isFieldForSelectedCategories} />
+      {/* <button onClick={() => console.log('propsForCustomFields:', propsForCustomFields)}>Log propsForCustomFields</button> */}
+      {/* <SectionDetailsMaybe {...props} isFieldForCategory={isFieldForSelectedCategories} /> */}
       {propsForCustomFields.map(customFieldProps => {
-        const { schemaType, ...fieldProps } = customFieldProps;
+        const { schemaType, key, ...fieldProps } = customFieldProps;
+        const value = fieldProps.scope === 'public' ? publicData[key] : fieldProps.scope === 'metadata' ? metadata[key] : null;
+        const hasValue = value != null;
+
+        if (shouldHideField(key)) {
+          return null;
+        }
+
         return schemaType === SCHEMA_TYPE_MULTI_ENUM ? (
-          <SectionMultiEnumMaybe {...fieldProps} />
-        ) : schemaType === SCHEMA_TYPE_TEXT ? (
-          <SectionTextMaybe {...fieldProps} />
+          <SectionMultiEnumMaybe key={key} {...fieldProps} />
+        ) : schemaType === SCHEMA_TYPE_TEXT && hasValue ? (
+          <SectionTextMaybe key={key} {...fieldProps} text={value} />
         ) : null;
       })}
     </>

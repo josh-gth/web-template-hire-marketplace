@@ -18,9 +18,19 @@ const { Money } = sdkTypes;
 
 const getInitialValues = params => {
   const { listing } = params;
-  const { price } = listing?.attributes || {};
+  const { price, publicData } = listing?.attributes || {};
 
-  return { price };
+  return { 
+    price,
+    discountThreshold1: publicData?.discountThreshold1,
+    discountPercentage1: publicData?.discountPercentage1,
+    discountThreshold2: publicData?.discountThreshold2,
+    discountPercentage2: publicData?.discountPercentage2,
+    discountThreshold3: publicData?.discountThreshold3,
+    discountPercentage3: publicData?.discountPercentage3,
+    discountThreshold4: publicData?.discountThreshold4,
+    discountPercentage4: publicData?.discountPercentage4,
+   };
 };
 
 const EditListingPricingPanel = props => {
@@ -68,11 +78,30 @@ const EditListingPricingPanel = props => {
           className={css.form}
           initialValues={initialValues}
           onSubmit={values => {
-            const { price } = values;
+            const { price,
+              discountThreshold1,
+              discountPercentage1,
+              discountThreshold2,
+              discountPercentage2,
+              discountThreshold3,
+              discountPercentage3,
+              discountThreshold4,
+              discountPercentage4,
+            } = values;
 
             // New values for listing attributes
             const updateValues = {
               price,
+              publicData: {
+                discountThreshold1,
+                discountPercentage1,
+                discountThreshold2,
+                discountPercentage2,
+                discountThreshold3,
+                discountPercentage3,
+                discountThreshold4,
+                discountPercentage4,
+              },
             };
             onSubmit(updateValues);
           }}

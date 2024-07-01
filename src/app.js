@@ -26,6 +26,7 @@ import { mergeConfig } from './util/configHelpers';
 import { IntlProvider } from './util/reactIntl';
 import { includeCSSProperties } from './util/style';
 import { IncludeScripts } from './util/includeScripts';
+import { FirebaseProvider } from './firebase/FirebaseContext';
 
 import { MaintenanceMode } from './components';
 
@@ -257,7 +258,9 @@ export const ClientApp = props => {
           <HelmetProvider>
             <IncludeScripts config={appConfig} />
             <BrowserRouter>
+            <FirebaseProvider >
               <Routes logLoadDataCalls={logLoadDataCalls} />
+              </FirebaseProvider>
             </BrowserRouter>
           </HelmetProvider>
         </Provider>

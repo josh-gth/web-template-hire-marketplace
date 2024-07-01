@@ -75,6 +75,8 @@ import SectionAuthorMaybe from './SectionAuthorMaybe';
 import SectionMapMaybe from './SectionMapMaybe';
 import SectionGallery from './SectionGallery';
 import CustomListingFields from './CustomListingFields';
+import SectionAirbnbGallery from './SectionAirbnbGallery.js';
+import ListingPageProductDetails from './ListingPageProductDetails';
 
 import css from './ListingPage.module.css';
 
@@ -271,19 +273,19 @@ export const ListingPageComponent = props => {
   const productURL = `${config.marketplaceRootURL}${location.pathname}${location.search}${location.hash}`;
   const schemaPriceMaybe = price
     ? {
-        price: intl.formatNumber(convertMoneyToNumber(price), {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }),
-        priceCurrency: price.currency,
-      }
+      price: intl.formatNumber(convertMoneyToNumber(price), {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }),
+      priceCurrency: price.currency,
+    }
     : {};
   const currentStock = currentListing.currentStock?.attributes?.quantity || 0;
   const schemaAvailability = !currentListing.currentStock
     ? null
     : currentStock > 0
-    ? 'https://schema.org/InStock'
-    : 'https://schema.org/OutOfStock';
+      ? 'https://schema.org/InStock'
+      : 'https://schema.org/OutOfStock';
 
   const availabilityMaybe = schemaAvailability ? { availability: schemaAvailability } : {};
 
@@ -310,6 +312,9 @@ export const ListingPageComponent = props => {
       }}
     >
       <LayoutSingleColumn className={css.pageRoot} topbar={topbar} footer={<FooterContainer />}>
+        <div className={css.galleryWrapper}>
+          <SectionAirbnbGallery listing={currentListing} variantPrefix={config.layout.listingImage.variantPrefix} />
+        </div>
         <div className={css.contentWrapperForProductLayout}>
           <div className={css.mainColumnForProductLayout}>
             {currentListing.id && noPayoutDetailsSetWithOwnListing ? (
@@ -333,10 +338,10 @@ export const ListingPageComponent = props => {
                 }}
               />
             ) : null}
-            <SectionGallery
+            {/* <SectionGallery
               listing={currentListing}
               variantPrefix={config.layout.listingImage.variantPrefix}
-            />
+            /> */}
             <div className={css.mobileHeading}>
               <H4 as="h1" className={css.orderPanelTitle}>
                 <FormattedMessage id="ListingPage.orderTitle" values={{ title: richTitle }} />
@@ -351,6 +356,9 @@ export const ListingPageComponent = props => {
               categoryConfiguration={config.categoryConfiguration}
               intl={intl}
             />
+
+
+            {publicData ? <ListingPageProductDetails productId={publicData.product_id} productFamily={publicData.product_family} /> : null}
 
             <SectionMapMaybe
               geolocation={geolocation}

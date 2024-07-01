@@ -8,6 +8,86 @@ const {
 const { types } = require('sharetribe-flex-sdk');
 const { Money } = types;
 
+const resolveDiscount = (listing, totalDays) => {
+  const { publicData } = listing.attributes;
+  const discounts = [
+    { days: publicData.discountThreshold1, percentage: publicData.discountPercentage1 },
+    { days: publicData.discountThreshold2, percentage: publicData.discountPercentage2 },
+    { days: publicData.discountThreshold3, percentage: publicData.discountPercentage3 },
+    { days: publicData.discountThreshold4, percentage: publicData.discountPercentage4 },
+  ].filter(discount => discount.days && discount.percentage);
+
+  const discount = discounts.sort((a, b) => b.days - a.days).find(discount => totalDays >= discount.days);
+  console.log('Total Days:', totalDays);
+  console.log('Filtered Discounts:', discounts);
+  console.log('Resolved Discount:', discount);
+  return discount ? discount.percentage : 0;
+};
+
+const countChargedDays = (startDate, endDate, includeSaturday, includeSunday) => {
+  let count = 0;
+  let currentDate = new Date(startDate);
+
+  console.log('Start Date:', startDate);
+  console.log('End Date:', endDate);
+  console.log('Days in between:');
+
+  while (currentDate <= endDate) {
+    const day = currentDate.getDay();
+    console.log('Current Date:', currentDate, 'Day:', day);
+    if (day !== 0 || includeSunday) { // Include Sunday if checked
+      if (day !== 6 || includeSaturday) { // Include Saturday if checked
+        count++;
+      }
+    }
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  console.log('Charged Days:', count);
+  return count;
+};
+
+// Helper function to compare dates without considering time part
+const compareDates = (date1, date2) => {
+  const d1 = new Date(date1);
+  const d2 = new Date(date2);
+  d1.setHours(0, 0, 0, 0);
+  d2.setHours(0, 0, 0, 0);
+  return d1 <= d2;
+};
+
+/**
+ * Calculate quantity based on days or nights between given bookingDates.
+ *
+ * @param {*} orderData should contain bookingDates
+ * @param {*} code should be either 'line-item/day' or 'line-item/night'
+ */
+const getDateRangeQuantityAndLineItems = (orderData, code, listing) => {
+  const { bookingStart, bookingEnd, includeSaturday, includeSunday } = orderData || {};
+  const quantity = bookingStart && bookingEnd ? countChargedDays(bookingStart, bookingEnd, includeSaturday, includeSunday) : null;
+  const discountPercentage = resolveDiscount(listing, quantity);
+
+  console.log('Unit Price:', listing.attributes.price.amount);
+  console.log('Total Amount before discount:', listing.attributes.price.amount * quantity);
+  console.log('Discount Percentage:', discountPercentage);
+
+  const discountLineItem = discountPercentage
+    ? [
+        {
+          code: `line-item/discount-${discountPercentage}%`,
+          unitPrice: new Money(
+            -Math.round((listing.attributes.price.amount * quantity * discountPercentage) / 100),
+            listing.attributes.price.currency
+          ),
+          quantity: 1,
+          includeFor: ['customer', 'provider'],
+        },
+      ]
+    : [];
+
+  return { quantity, extraLineItems: discountLineItem };
+};
+
 /**
  * Get quantity and add extra line-items that are related to delivery method
  *
@@ -73,21 +153,6 @@ const getHourQuantityAndLineItems = orderData => {
 };
 
 /**
- * Calculate quantity based on days or nights between given bookingDates.
- *
- * @param {*} orderData should contain bookingDates
- * @param {*} code should be either 'line-item/day' or 'line-item/night'
- */
-const getDateRangeQuantityAndLineItems = (orderData, code) => {
-  // bookingStart & bookingend are used with day-based bookings (how many days / nights)
-  const { bookingStart, bookingEnd } = orderData || {};
-  const quantity =
-    bookingStart && bookingEnd ? calculateQuantityFromDates(bookingStart, bookingEnd, code) : null;
-
-  return { quantity, extraLineItems: [] };
-};
-
-/**
  * Returns collection of lineItems (max 50)
  *
  * All the line-items dedicated to _customer_ define the "payin total".
@@ -143,7 +208,7 @@ exports.transactionLineItems = (listing, orderData, providerCommission, customer
       : unitType === 'hour'
       ? getHourQuantityAndLineItems(orderData)
       : ['day', 'night'].includes(unitType)
-      ? getDateRangeQuantityAndLineItems(orderData, code)
+      ? getDateRangeQuantityAndLineItems(orderData, code, listing)
       : {};
 
   const { quantity, extraLineItems } = quantityAndExtraLineItems;
@@ -221,6 +286,9 @@ exports.transactionLineItems = (listing, orderData, providerCommission, customer
     ...providerCommissionMaybe,
     ...customerCommissionMaybe,
   ];
+
+  console.log('Order Line Item:', order);
+  console.log('Final Line Items:', lineItems);
 
   return lineItems;
 };
