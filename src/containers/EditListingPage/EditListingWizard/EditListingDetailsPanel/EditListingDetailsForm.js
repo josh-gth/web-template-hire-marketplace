@@ -1,3 +1,5 @@
+// src/containers/EditListingPage/EditListingWizard/EditListingDetailsPanel/EditListingDetailsForm.js
+
 import React, { useState, useEffect } from 'react';
 import { arrayOf, bool, func, shape, string } from 'prop-types';
 import { compose } from 'redux';
@@ -205,7 +207,7 @@ const FieldSelectCategory = props => {
     checkIfInitialValuesExist();
   }, []);
 
-  const { prefix, listingCategories, formApi, intl, setAllCategoriesChosen, values } = props;
+  const { prefix, listingCategories, formApi, intl, setAllCategoriesChosen, values, handleProductSelect } = props;
 
   // Counts the number of selected categories in the form values based on the given prefix.
   const countSelectedCategories = () => {
@@ -221,7 +223,10 @@ const FieldSelectCategory = props => {
 
   // If a parent category changes, clear all child category values
   const handleCategoryChange = (category, level, currentCategoryOptions) => {
+    handleProductSelect('');
+    console.log('handleCategoryChange triggered with:', category);
     const selectedCatLenght = countSelectedCategories();
+    console.log('category:', category);
     if (level < selectedCatLenght) {
       for (let i = selectedCatLenght; i > level; i--) {
         formApi.change(`${prefix}${i}`, null);
@@ -257,13 +262,13 @@ const AddListingFields = props => {
     const isTargetListingType = isFieldForListingType(listingType, fieldConfig);
     const isTargetCategory = isFieldForCategory(targetCategoryIds, fieldConfig);
 
-    // Hide product family and id fields
-    if (namespacedKey === 'pub_product_family' || namespacedKey === 'pub_product_id') {
-      return [
-        ...pickedFields,
-        <FieldHidden key={namespacedKey} name={namespacedKey} />,
-      ];
-    }
+    // // Hide product family and id fields
+    // if (namespacedKey === 'pub_product_family' || namespacedKey === 'pub_product_id') {
+    //   return [
+    //     ...pickedFields,
+    //     <FieldHidden key={namespacedKey} name={namespacedKey} />,
+    //   ];
+    // }
 
     return isKnownSchemaType && isProviderScope && isTargetListingType && isTargetCategory
       ? [
@@ -288,11 +293,13 @@ const AddListingFields = props => {
 // In addition, it asks about custom fields according to marketplace-custom-config.js
 const EditListingDetailsFormComponent = props => {
   const [productId, setProductId] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [productFamily, setProductFamily] = useState('');
+  const [productData, setProductData] = useState({});
 
-  const handleProductSelect = (id, family) => {
+  const handleProductSelect = (id) => {
+    console.log('handleProductSelect triggered with:', id);
     setProductId(id);
-    setProductFamily(family);
   };
 
   return (
@@ -325,22 +332,78 @@ const EditListingDetailsFormComponent = props => {
           values,
         } = formRenderProps;
 
-        useEffect(() => {
-          if (productId) {
-            formApi.change('pub_product_id', productId);
-          }
-        }, [productId, formApi]);
+        // useEffect(() => {
+        //   if (productId) {
+        //     formApi.change('pub_product_id', productId);
+        //   }
+        // }, [productId, formApi]);
+
+        const changeProductIdField = (productId) => {
+          formApi.change('pub_product_id', productId);
+        };
 
         useEffect(() => {
-          if (productFamily) {
-            formApi.change('pub_product_family', productFamily);
+          if (values.categoryLevel1) {
+            setSelectedCategory(values.categoryLevel1);
           }
-        }, [productFamily, formApi]);
+        }, [values]);
+
+
+        // Update form fields with product data from product library selection
+        useEffect(() => {
+          console.log('productData effect triggered with:', productData);
+        
+          if (productData) {
+            console.log('listingFieldsConfig:', listingFieldsConfig);
+            listingFieldsConfig.forEach(field => {
+              if (field.key !== `product_id`) {
+                formApi.change(`pub_${field.key}`, null);
+                console.log(`pub_${field.key} set to null:`);
+              }
+            });
+
+            Object.keys(productData).forEach(key => {
+              const namespacedKey = `pub_${key}`;
+              if (values[namespacedKey] !== undefined && values[namespacedKey] !== `pub_product_id`) { // Ensure the form has this field
+                const fieldConfig = listingFieldsConfig.find(field => {
+                  const configKey = field.scope === 'public' ? `pub_${field.key}` : `priv_${field.key}`;
+                  return configKey === namespacedKey;
+                });
+        
+                // If field configuration is found
+                if (fieldConfig) {
+                  console.log('fieldconfig:', fieldConfig);
+                  try {
+                    let valueToSet = productData[key];
+        
+                    // Convert string to number if field type is 'Number'
+                    if (fieldConfig.schemaType === 'long' && typeof valueToSet === 'string') {
+                      valueToSet = parseFloat(valueToSet);
+        
+                      if (isNaN(valueToSet)) { // Check if conversion was successful
+                        throw new Error(`Failed to convert value for ${namespacedKey} to a number.`);
+                      }
+                    }
+        
+                    console.log(`Updating field ${namespacedKey} with value ${valueToSet}`);
+                    formApi.change(namespacedKey, valueToSet);
+                  } catch (error) {
+                    console.error(`Error updating field ${namespacedKey}:`, error);
+                  }
+                } else {
+                  console.warn(`No field configuration found for key: ${namespacedKey}`);
+                }
+              } else {
+                // console.warn(`Form does not contain a field for key: ${namespacedKey}`);
+              }
+            });
+          }
+        }, [productData]);
 
         useEffect(() => {
-          setProductFamily(values.pub_product_family);
+          // setProductFamily(values.pub_product_family);
           setProductId(values.pub_product_id);
-          // console.log('Product family and id:', values.pub_product_family, values.pub_product_id);
+          console.log('ProductId Set:', values.pub_product_id);
         }, []);
 
         const { listingType, transactionProcessAlias, unitType } = values;
@@ -394,6 +457,7 @@ const EditListingDetailsFormComponent = props => {
                 intl={intl}
                 allCategoriesChosen={allCategoriesChosen}
                 setAllCategoriesChosen={setAllCategoriesChosen}
+                handleProductSelect={handleProductSelect}
               />
             ) : null}
 
@@ -403,9 +467,14 @@ const EditListingDetailsFormComponent = props => {
                 <ProductSelection
                   onProductSelect={handleProductSelect}
                   productId={productId}
-                  productFamily={productFamily}
+                  productFamily={selectedCategory}
+                  setProductData={setProductData}
+                  changeProductIdField={changeProductIdField}
                 />
-                {/* <button onClick={() => console.log(values)}>Log Values</button> */}
+                <button onClick={() => console.log(values)}>Log Values</button>
+                {/* <button onClick={() => console.log('selectedCategory:', selectedCategory)}>Log selectedCategory</button> */}
+                {/* <button onClick={() => console.log('product data:', productData)}>Log Product Data</button> */}
+                {/* <button onClick={() => console.log('productId:', productId)}>Log productId</button> */}
               </>
             ) : null}
 

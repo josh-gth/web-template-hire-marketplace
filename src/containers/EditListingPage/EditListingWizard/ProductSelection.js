@@ -1,93 +1,65 @@
+// src/containers/EditListingPage/EditListingWizard/ProductSelection.js
+
 import React, { useState, useEffect } from 'react';
-import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
-import { useFirebase } from '../../../firebase/FirebaseContext';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import ProductAutocomplete from './ProductAutocomplete'; // Import the new component
-import { Stack } from '@mui/material';
+import { useSupabase } from '../../../supabase/SupabaseContext';
+import { Stack, TextField, Autocomplete } from '@mui/material';
 
-const ProductSelection = ({ onProductSelect, productId, productFamily }) => {
-  const { db } = useFirebase();
-  const [productFamilies, setProductFamilies] = useState([]);
-  const [selectedFamily, setSelectedFamily] = useState('');
+const ProductSelection = ({ onProductSelect, productFamily, productId, setProductData, changeProductIdField }) => {
+  const { supabase } = useSupabase();
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [products, setProducts] = useState([]);
 
   useEffect(() => {
-    const fetchProductFamilies = async () => {
-      const querySnapshot = await getDocs(collection(db, 'productFamilies'));
-      const families = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setProductFamilies(families);
-      // console.log('Fetched product families:', families);
-    };
-
-    fetchProductFamilies();
-  }, [db]);
-
-  useEffect(() => {
-    const fetchProductData = async () => {
-      if (productFamily && productId) {
-        try {
-          const productRef = doc(db, `productFamilies/${productFamily}/products/${productId}`);
-          const productSnap = await getDoc(productRef);
-          if (productSnap.exists()) {
-            const productData = productSnap.data();
-            setSelectedFamily(productFamily);
-            setSelectedProduct({ id: productId, ...productData });
-            onProductSelect(productId, productFamily);
-            console.log('Fetched product data:', { id: productId, ...productData });
-          } else {
-            console.log('No such product document!', productFamily, productId);
+    const fetchProducts = async () => {
+      if (productFamily) {
+        const { data, error } = await supabase
+          .from(productFamily)  // Use the actual table name
+          .select('*')
+          .eq('product_family', productFamily);
+        if (error) {
+          console.error('Error fetching products:', error);
+        } else {
+          setProducts(data);
+          // If productId is provided, set the selected product
+          if (productId) {
+            const selectedProduct = data.find(product => product.id === productId);
+            if (selectedProduct) {
+              setSelectedProduct(selectedProduct);
+              setProductData(selectedProduct);
+            }
           }
-        } catch (error) {
-          console.error('Error fetching product data:', error);
         }
       }
     };
+    fetchProducts();
+  }, [supabase, productFamily, productId, setProductData]);
 
-    fetchProductData();
-  }, [db, productFamily, productId, onProductSelect]);
-
-  const handleFamilyChange = event => {
-    setSelectedFamily(event.target.value);
-    setSelectedProduct(null); // Clear selected product when changing family
-    console.log('Selected family changed:', event.target.value);
-  };
-
-  const handleProductChange = product => {
-    onProductSelect(product.id, selectedFamily);
-    setSelectedProduct(product);
+  const handleProductChange = (event, newValue) => {
+    if (newValue) {
+      onProductSelect(newValue.id);
+      changeProductIdField(newValue.id);
+      setSelectedProduct(newValue);
+      setProductData(newValue);
+    }
   };
 
   return (
-    <Stack spacing={5} sx={{ mb: 4}}>
-      <FormControl fullWidth margin="normal">
-        <InputLabel id="product-family-select-label">Product Family</InputLabel>
-        <Select
-          labelId="product-family-select-label"
-          id="productFamily"
-          value={selectedFamily}
-          label="Product Family"
-          onChange={handleFamilyChange}
-          required
-        >
-          <MenuItem value="">
-            <em>None</em>
-          </MenuItem>
-          {productFamilies.map(family => (
-            <MenuItem key={family.id} value={family.id}>{family.name}</MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-      {/* <button onClick={() => console.log('families', productFamilies)}>Log Families</button> */}
-
-      <ProductAutocomplete
-        selectedFamily={selectedFamily}
-        selectedProduct={selectedProduct}
-        onProductChange={handleProductChange}
+    <Stack spacing={5} sx={{ mb: 4 }}>
+      <Autocomplete
+        id="product-autocomplete"
+        options={products}
+        getOptionLabel={(option) => `${option.manufacturer} - ${option.model}`}
+        value={selectedProduct}
+        onChange={handleProductChange}
+        renderInput={(params) => <TextField {...params} label="Product" variant="outlined" fullWidth required />}
+        renderOption={(props, option) => (
+          <li {...props} key={option.id}>
+            {option.manufacturer} - {option.model}
+          </li>
+        )}
+        disabled={!productFamily}
       />
-      </Stack>
+    </Stack>
   );
 };
 

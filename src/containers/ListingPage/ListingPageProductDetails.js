@@ -1,16 +1,14 @@
-// ListingPageProductDetails.js
+// src/containers/ListingPage/ListingPageProductDetails.js
+
 import React, { useState, useEffect } from 'react';
-import { useFirebase } from '../../firebase/FirebaseContext';
-import { doc, getDoc } from 'firebase/firestore';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import { useSupabase } from '../../supabase/SupabaseContext';
+import { Table, TableBody, TableCell, TableContainer, TableRow, Paper } from '@mui/material';
 import css from './ListingPage.module.css';
 
-
 const sortOrder = {
-  manufacturer: 1,
-  model: 2,
-  product_family: 3,
-  product_type: 4,
+  manufacturer: 2,
+  model: 3,
+  product_type: 1,
   maximum_lift_capacity: 5,
   maximum_lift_height: 6,
   ground_clearance: 7,
@@ -35,8 +33,11 @@ const sortOrder = {
 const hiddenAttributes = [
   'urls',
   'urls_1',
-  'double_checked'
-];
+  'double_checked',
+  'id',
+  'family_id',
+  'product_family',
+]; 
 
 const formatAttributeName = (name) => {
   return name.split('_')
@@ -44,26 +45,50 @@ const formatAttributeName = (name) => {
     .join(' ');
 };
 
+const formatAttributeWithUnits = (key, value) => {
+  let formattedKey = key;
+  let unit = '';
+
+  if (key.endsWith('_m')) {
+    formattedKey = key.slice(0, -2);
+    unit = 'm';
+  } else if (key.endsWith('_kg')) {
+    formattedKey = key.slice(0, -3);
+    unit = 'kg';
+  }
+
+  const formattedValue = value === null ? 'N/A' : `${value}${unit}`.trim();
+
+  return {
+    key: formatAttributeName(formattedKey),
+    value: formattedValue,
+  };
+};
+
 const ListingPageProductDetails = ({ productFamily, productId }) => {
-  const { db } = useFirebase();
+  const { supabase } = useSupabase();
   const [productDetails, setProductDetails] = useState({});
 
   useEffect(() => {
     const fetchProductDetails = async () => {
-      const docRef = doc(db, `productFamilies/${productFamily}/products`, productId);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        setProductDetails(docSnap.data());
-        console.log('Fetched product details:', docSnap.data());
+      const { data, error } = await supabase
+        .from(productFamily) // Ensure this table name matches your Supabase table
+        .select('*')
+        .eq('id', productId)
+        .single();
+        
+      if (error) {
+        console.error('Error fetching product details:', error);
       } else {
-        console.log('No such document!');
+        setProductDetails(data);
+        console.log('Fetched product details:', data);
       }
     };
 
     if (productId) {
       fetchProductDetails();
     }
-  }, [db, productFamily, productId]);
+  }, [supabase, productFamily, productId]);
 
   const sortedEntries = Object.entries(productDetails)
     .filter(([key]) => !hiddenAttributes.includes(key)) // Filter out hidden attributes
@@ -74,28 +99,30 @@ const ListingPageProductDetails = ({ productFamily, productId }) => {
     });
 
   return (
-    <TableContainer component={Paper} style={{ marginBottom: '20px' }}>
-      <Table aria-label="product details table">
-        {/* <TableHead>
-          <TableRow>
-            <TableCell>Attribute</TableCell>
-            <TableCell align="right">Value</TableCell>
-          </TableRow>
-        </TableHead> */}
-        <TableBody>
-          {sortedEntries.map(([key, value]) => (
-            <TableRow key={key}>
-              <TableCell component="th" scope="row">
-                <p className={css.text}>
-                {formatAttributeName(key)}
-                </p>
-              </TableCell>
-              <TableCell align="right" > <p className={css.text}><strong>{value.toString()}</strong></p></TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+    <>
+      {/* <button onClick={() => console.log('product:', productDetails)}>Log product details</button> */}
+      <TableContainer component={Paper} style={{ marginBottom: '20px' }}>
+        <Table aria-label="product details table">
+          <TableBody>
+            {sortedEntries.map(([key, value]) => {
+              const { key: formattedKey, value: formattedValue } = formatAttributeWithUnits(key, value);
+              return (
+                <TableRow key={key}>
+                  <TableCell component="th" scope="row">
+                    <p className={css.text}>
+                      {formattedKey}
+                    </p>
+                  </TableCell>
+                  <TableCell align="right">
+                    <p className={css.text}><strong>{formattedValue}</strong></p>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </>
   );
 };
 
