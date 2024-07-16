@@ -1,5 +1,3 @@
-// src/containers/EditListingPage/EditListingWizard/ProductSelection.js
-
 import React, { useState, useEffect } from 'react';
 import { useSupabase } from '../../../supabase/SupabaseContext';
 import { Stack, TextField, Autocomplete } from '@mui/material';
@@ -15,14 +13,22 @@ const ProductSelection = ({ onProductSelect, productFamily, productId, setProduc
         const { data, error } = await supabase
           .from(productFamily)  // Use the actual table name
           .select('*')
-          .eq('product_family', productFamily);
+          // .eq('product_family', productFamily);
         if (error) {
           console.error('Error fetching products:', error);
         } else {
-          setProducts(data);
+          // Sort the products alphabetically by manufacturer and model
+          const sortedProducts = data.sort((a, b) => {
+            const nameA = `${a.manufacturer} - ${a.model}`.toUpperCase();
+            const nameB = `${b.manufacturer} - ${b.model}`.toUpperCase();
+            return nameA.localeCompare(nameB);
+          });
+
+          setProducts(sortedProducts);
+
           // If productId is provided, set the selected product
           if (productId) {
-            const selectedProduct = data.find(product => product.id === productId);
+            const selectedProduct = sortedProducts.find(product => product.id === productId);
             if (selectedProduct) {
               setSelectedProduct(selectedProduct);
               setProductData(selectedProduct);
@@ -59,6 +65,7 @@ const ProductSelection = ({ onProductSelect, productFamily, productId, setProduc
         )}
         disabled={!productFamily}
       />
+      <button onClick={() => console.log('products:', products)}>Log products</button>
     </Stack>
   );
 };
