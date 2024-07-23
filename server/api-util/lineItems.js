@@ -31,6 +31,9 @@ const countChargedDays = (startDate, endDate, includeSaturday, includeSunday) =>
   console.log('Start Date:', startDate);
   console.log('End Date:', endDate);
   console.log('Days in between:');
+  console.log('includeSaturday:', includeSaturday);
+  console.log('includeSunday:', includeSunday);
+
 
   while (currentDate <= endDate) {
     const day = currentDate.getDay();
@@ -67,6 +70,7 @@ const getDateRangeQuantityAndLineItems = (orderData, code, listing) => {
   const quantity = bookingStart && bookingEnd ? countChargedDays(bookingStart, bookingEnd, includeSaturday, includeSunday) : null;
   const discountPercentage = resolveDiscount(listing, quantity);
 
+  console.log('orderData:', orderData);
   console.log('Unit Price:', listing.attributes.price.amount);
   console.log('Total Amount before discount:', listing.attributes.price.amount * quantity);
   console.log('Discount Percentage:', discountPercentage);

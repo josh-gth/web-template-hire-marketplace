@@ -352,7 +352,7 @@ const EditListingDetailsFormComponent = props => {
         // Update form fields with product data from product library selection
         useEffect(() => {
           console.log('productData effect triggered with:', productData);
-        
+
           if (productData) {
             console.log('listingFieldsConfig:', listingFieldsConfig);
             listingFieldsConfig.forEach(field => {
@@ -369,22 +369,28 @@ const EditListingDetailsFormComponent = props => {
                   const configKey = field.scope === 'public' ? `pub_${field.key}` : `priv_${field.key}`;
                   return configKey === namespacedKey;
                 });
-        
+
                 // If field configuration is found
                 if (fieldConfig) {
                   console.log('fieldconfig:', fieldConfig);
                   try {
                     let valueToSet = productData[key];
-        
+
                     // Convert string to number if field type is 'Number'
                     if (fieldConfig.schemaType === 'long' && typeof valueToSet === 'string') {
                       valueToSet = parseFloat(valueToSet);
-        
+
                       if (isNaN(valueToSet)) { // Check if conversion was successful
                         throw new Error(`Failed to convert value for ${namespacedKey} to a number.`);
                       }
                     }
-        
+
+                    // Multiply by 100 if the key ends in '_m' to convert from metres to centimetres
+                    if (key.endsWith('_m') && typeof valueToSet === 'number') {
+                      valueToSet = valueToSet * 100;
+                      console.log(`Converted ${key} value to centimetres: ${valueToSet}`);
+                    }
+
                     console.log(`Updating field ${namespacedKey} with value ${valueToSet}`);
                     formApi.change(namespacedKey, valueToSet);
                   } catch (error) {
@@ -399,6 +405,7 @@ const EditListingDetailsFormComponent = props => {
             });
           }
         }, [productData]);
+
 
         useEffect(() => {
           // setProductFamily(values.pub_product_family);
@@ -471,7 +478,7 @@ const EditListingDetailsFormComponent = props => {
                   setProductData={setProductData}
                   changeProductIdField={changeProductIdField}
                 />
-                <button onClick={() => console.log(values)}>Log Values</button>
+                {/* <button onClick={() => console.log(values)}>Log Values</button> */}
                 {/* <button onClick={() => console.log('selectedCategory:', selectedCategory)}>Log selectedCategory</button> */}
                 {/* <button onClick={() => console.log('product data:', productData)}>Log Product Data</button> */}
                 {/* <button onClick={() => console.log('productId:', productId)}>Log productId</button> */}

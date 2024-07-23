@@ -364,7 +364,7 @@ const handleFocusedInputChange = setFocusedInput => focusedInput => {
 // When the values of the form are updated we need to fetch
 // lineItems from this Template's backend for the EstimatedTransactionMaybe
 // In case you add more fields to the form, make sure you add
-// the values here to the orderData object.
+// the values here to the orderData object. 
 const handleFormSpyChange = (
   listingId,
   isOwnListing,
@@ -375,6 +375,7 @@ const handleFormSpyChange = (
     formValues.values && formValues.values.bookingDates ? formValues.values.bookingDates : {};
   const includeSaturday = formValues.values ? formValues.values.includeSaturday : false;
   const includeSunday = formValues.values ? formValues.values.includeSunday : false;
+  console.log('formValues:', formValues);
 
   if (startDate && endDate && !fetchLineItemsInProgress) {
     const adjustedEndDate = new Date(endDate);
@@ -382,6 +383,8 @@ const handleFormSpyChange = (
 
     console.log('FormSpy Start Date:', startDate);
     console.log('FormSpy End Date:', adjustedEndDate);
+    console.log('FormSpy Include Saturday:', includeSaturday);
+    console.log('FormSpy Include Sunday:', includeSunday);
     onFetchTransactionLineItems({
       orderData: {
         bookingStart: startDate,

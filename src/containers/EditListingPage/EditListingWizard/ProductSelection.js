@@ -65,7 +65,7 @@ const ProductSelection = ({ onProductSelect, productFamily, productId, setProduc
         )}
         disabled={!productFamily}
       />
-      <button onClick={() => console.log('products:', products)}>Log products</button>
+      {/* <button onClick={() => console.log('products:', products)}>Log products</button> */}
     </Stack>
   );
 };
