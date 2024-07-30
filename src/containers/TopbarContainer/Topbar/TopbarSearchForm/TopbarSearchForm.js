@@ -1,3 +1,5 @@
+// src/containers/TopbarContainer/Topbar/TopbarSearchForm/TopbarSearchForm.js
+
 import React, { Component } from 'react';
 import { bool, func, object, string } from 'prop-types';
 import { Form as FinalForm, Field } from 'react-final-form';
@@ -9,7 +11,7 @@ import { isMainSearchTypeKeywords } from '../../../../util/search';
 import { Form, LocationAutocompleteInput } from '../../../../components';
 
 import IconSearchDesktop from './IconSearchDesktop';
-import css from './TopbarSearchForm.module.css';
+import css from './TopbarSearchForm.module.css'; 
 
 const identity = v => v;
 

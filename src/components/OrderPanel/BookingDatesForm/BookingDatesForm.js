@@ -373,22 +373,25 @@ const handleFormSpyChange = (
 ) => formValues => {
   const { startDate, endDate } =
     formValues.values && formValues.values.bookingDates ? formValues.values.bookingDates : {};
-  const includeSaturday = formValues.values ? formValues.values.includeSaturday : false;
-  const includeSunday = formValues.values ? formValues.values.includeSunday : false;
-  console.log('formValues:', formValues);
+  const includeSaturday = formValues.values?.includeSaturday?.length > 0;
+  // const includeSunday = formValues.values ? formValues.values.includeSunday : false;
+  const includeSunday = formValues.values?.includeSunday?.length > 0;
+  // console.log('formValues:', formValues);
+  // console.log('includeSaturday:', includeSaturday);
+  // console.log('includeSunday:', includeSunday);
 
   if (startDate && endDate && !fetchLineItemsInProgress) {
     const adjustedEndDate = new Date(endDate);
     adjustedEndDate.setDate(adjustedEndDate.getDate() - 1); // Adjust the end date
 
-    console.log('FormSpy Start Date:', startDate);
-    console.log('FormSpy End Date:', adjustedEndDate);
-    console.log('FormSpy Include Saturday:', includeSaturday);
-    console.log('FormSpy Include Sunday:', includeSunday);
+    // console.log('FormSpy Start Date:', startDate);
+    // console.log('FormSpy End Date:', adjustedEndDate);
+    // console.log('FormSpy Include Saturday:', includeSaturday);
+    // console.log('FormSpy Include Sunday:', includeSunday);
     onFetchTransactionLineItems({
       orderData: {
         bookingStart: startDate,
-        bookingEnd: adjustedEndDate,
+        bookingEnd: endDate,
         includeSaturday,
         includeSunday,
       },
@@ -467,6 +470,7 @@ export const BookingDatesFormComponent = props => {
     <FinalForm
       {...rest}
       unitPrice={unitPrice}
+      initialValues={{ includeSaturday: false, includeSunday: false }}
       onSubmit={onFormSubmit}
       render={fieldRenderProps => {
         const {
@@ -483,6 +487,8 @@ export const BookingDatesFormComponent = props => {
           onFetchTimeSlots,
         } = fieldRenderProps;
         const { startDate, endDate } = values && values.bookingDates ? values.bookingDates : {};
+        // console.log('startDate 490:', startDate);
+        // console.log('endDate 491:', endDate);
 
         const startDateErrorMessage = intl.formatMessage({
           id: 'FieldDateRangeInput.invalidStartDate',
@@ -503,6 +509,8 @@ export const BookingDatesFormComponent = props => {
               endDate,
             }
             : null;
+
+        // console.log('breakdownData:', breakdownData);
 
         const showEstimatedBreakdown =
           breakdownData && lineItems && !fetchLineItemsInProgress && !fetchLineItemsError;
@@ -587,6 +595,10 @@ export const BookingDatesFormComponent = props => {
                 const parsedEnd = endDate
                   ? getStartOf(timeOfDayFromLocalToTimeZone(endDate, timeZone), 'day', timeZone)
                   : endDate;
+                  // console.log('parsedStart:', parsedStart);
+                  // console.log('endDate?:', endDate);
+                  // console.log('parsedEnd:', parsedEnd); 
+                  // console.log('timeZone:', timeZone);
                 return v ? { startDate: parsedStart, endDate: parsedEnd } : v;
               }}
               useMobileMargins
@@ -625,13 +637,15 @@ export const BookingDatesFormComponent = props => {
             />
             <div className={css.extraOptions} style={{ marginTop: 24 }}>
               <FieldCheckbox
-                id="includeSaturday"
+                // id="includeSaturday"
+                id={`${formId}.includeSaturday`}
                 name="includeSaturday"
                 label="Include Saturdays"
                 value="includeSaturday"
               />
               <FieldCheckbox
-                id="includeSunday"
+                // id="includeSunday"
+                id={`${formId}.includeSunday`}
                 name="includeSunday"
                 label="Include Sundays"
                 value="includeSunday"

@@ -11,7 +11,7 @@ import classNames from 'classnames';
 // Import configs and util modules
 import { FormattedMessage, intlShape, injectIntl } from '../../../../util/reactIntl';
 import { propTypes } from '../../../../util/types';
-import { nonEmptyArray, composeValidators } from '../../../../util/validators';
+import { composeValidators } from '../../../../util/validators';
 import { isUploadImageOverLimitError } from '../../../../util/errors';
 
 // Import shared components
@@ -111,6 +111,9 @@ const FieldListingImage = props => {
   );
 };
 
+const minItemsArray = (min, message) => value =>
+  value && value.length >= min ? undefined : message;
+
 export const EditListingPhotosFormComponent = props => {
   const [state, setState] = useState({ imageUploadRequested: false });
   const [submittedImages, setSubmittedImages] = useState([]);
@@ -195,7 +198,8 @@ export const EditListingPhotosFormComponent = props => {
               <FieldArray
                 name="images"
                 validate={composeValidators(
-                  nonEmptyArray(
+                  minItemsArray(
+                    2,
                     intl.formatMessage({
                       id: 'EditListingPhotosForm.imageRequired',
                     })

@@ -103,6 +103,7 @@ const EditListingWizardTab = props => {
     tabSubmitButtonText,
     config,
     routeConfiguration,
+    currentUser
   } = props;
 
   const { type } = params;
@@ -111,6 +112,7 @@ const EditListingWizardTab = props => {
   const isNewListingFlow = isNewURI || isDraftURI;
 
   const currentListing = ensureListing(listing);
+  // console.log('currentUser:', currentUser);
 
   // New listing flow has automatic redirects to new tab on the wizard
   // and the last panel calls publishListing API endpoint.
@@ -171,6 +173,7 @@ const EditListingWizardTab = props => {
       submitButtonText: tabSubmitButtonText,
       listingTypes: config.listing.listingTypes,
       onManageDisableScrolling,
+      currentUser,
       onSubmit: values => {
         return onCompleteEditListingWizardTab(tab, values);
       },
@@ -285,6 +288,7 @@ EditListingWizardTab.propTypes = {
     replace: func.isRequired,
   }).isRequired,
   images: array.isRequired,
+  currentUser: propTypes.currentUser,
 
   // We cannot use propTypes.listing since the listing might be a draft.
   listing: shape({

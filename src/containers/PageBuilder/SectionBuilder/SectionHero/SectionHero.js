@@ -1,14 +1,13 @@
 import React from 'react';
-import { bool, func, node, object, shape, string } from 'prop-types';
+import { bool, func, node, object, shape, string, arrayOf } from 'prop-types';
 import classNames from 'classnames';
 
 import Field, { hasDataInFields } from '../../Field';
 
 import SectionContainer from '../SectionContainer';
+import SectionHeroSearchForm from './SectionHeroSearchForm';
 import css from './SectionHero.module.css';
 
-// Section component for a website's hero section
-// The Section Hero doesn't have any Blocks by default, all the configurations are made in the Section Hero settings
 const SectionHero = props => {
   const {
     sectionId,
@@ -20,10 +19,11 @@ const SectionHero = props => {
     appearance,
     callToAction,
     options,
+    appConfig,
+    onSubmit,
+    isMobile,
   } = props;
 
-  // If external mapping has been included for fields
-  // E.g. { h1: { component: MyAwesomeHeader } }
   const fieldComponents = options?.fieldComponents;
   const fieldOptions = { fieldComponents };
 
@@ -41,6 +41,11 @@ const SectionHero = props => {
         <header className={defaultClasses.sectionDetails}>
           <Field data={title} className={defaultClasses.title} options={fieldOptions} />
           <Field data={description} className={defaultClasses.description} options={fieldOptions} />
+          <SectionHeroSearchForm
+            appConfig={appConfig}
+            onSubmit={onSubmit}
+            isMobile={isMobile}
+          />
           <Field data={callToAction} className={defaultClasses.ctaButton} options={fieldOptions} />
         </header>
       ) : null}
@@ -56,13 +61,15 @@ SectionHero.defaultProps = {
   className: null,
   rootClassName: null,
   defaultClasses: null,
-  textClassName: null,
   title: null,
   description: null,
   appearance: null,
   callToAction: null,
   isInsideContainer: false,
   options: null,
+  appConfig: {},
+  onSubmit: () => {},
+  isMobile: false,
 };
 
 SectionHero.propTypes = {
@@ -81,6 +88,9 @@ SectionHero.propTypes = {
   callToAction: object,
   isInsideContainer: bool,
   options: propTypeOption,
+  appConfig: object,
+  onSubmit: func,
+  isMobile: bool,
 };
 
 export default SectionHero;

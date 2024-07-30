@@ -47,6 +47,7 @@ const EditListingPricingPanel = props => {
     panelUpdated,
     updateInProgress,
     errors,
+    currentUser
   } = props;
 
   const classes = classNames(rootClassName || css.root, className);
@@ -77,6 +78,7 @@ const EditListingPricingPanel = props => {
         <EditListingPricingForm
           className={css.form}
           initialValues={initialValues}
+          currentUser={currentUser}
           onSubmit={values => {
             const { price,
               discountThreshold1,

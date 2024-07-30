@@ -42,12 +42,12 @@ const DisplayNameMaybe = props => {
 
   const validateMaybe = isRequired
     ? {
-        validate: validators.required(
-          intl.formatMessage({
-            id: 'ProfileSettingsForm.displayNameRequired',
-          })
-        ),
-      }
+      validate: validators.required(
+        intl.formatMessage({
+          id: 'ProfileSettingsForm.displayNameRequired',
+        })
+      ),
+    }
     : {};
 
   return (
@@ -160,7 +160,9 @@ class ProfileSettingsFormComponent extends Component {
           const bioPlaceholder = intl.formatMessage({
             id: 'ProfileSettingsForm.bioPlaceholder',
           });
+          
 
+        
           const uploadingOverlay =
             uploadInProgress || this.state.uploadDelay ? (
               <div className={css.uploadingImageOverlay}>
@@ -367,6 +369,13 @@ class ProfileSettingsFormComponent extends Component {
                   <FormattedMessage id="ProfileSettingsForm.bioInfo" values={{ marketplaceName }} />
                 </p>
               </div>
+
+              <H4 as="h2" className={css.sectionTitle}>
+                <FormattedMessage id="ProfileSettingsForm.discountHeading" />
+              </H4>
+              <p className={css.extraInfo}>
+                <FormattedMessage id="ProfileSettingsForm.discountInfo"  />
+              </p>
               <div className={classNames(css.sectionContainer, css.lastSection)}>
                 {userFieldProps.map(fieldProps => (
                   <CustomExtendedDataField {...fieldProps} formId={formId} />

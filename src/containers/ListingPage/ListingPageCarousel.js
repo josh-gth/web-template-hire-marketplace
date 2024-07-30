@@ -360,6 +360,7 @@ export const ListingPageComponent = props => {
 
             {publicData ? <ListingPageProductDetails productId={publicData.product_id} productFamily={publicData.categoryLevel1} /> : null}
             {/* <button onClick={() => console.log('product data:', publicData)}>Log product data</button> */}
+            {/* <button onClick={() => console.log('currentUser:', currentUser)}>Log currentUser</button> */}
 
             <SectionMapMaybe
               geolocation={geolocation}

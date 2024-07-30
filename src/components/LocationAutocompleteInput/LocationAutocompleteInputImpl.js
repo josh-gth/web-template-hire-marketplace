@@ -491,6 +491,7 @@ class LocationAutocompleteInputImplementation extends Component {
       inputRef,
       disabled,
       config,
+      displayIcon,
     } = this.props;
     const { name, onFocus } = input;
     const { search } = currentValue(this.props);
@@ -518,6 +519,7 @@ class LocationAutocompleteInputImplementation extends Component {
 
     return (
       <div className={rootClass}>
+        {displayIcon ?
         <div className={iconClass}>
           {this.state.fetchingPlaceDetails ? (
             <IconSpinner className={css.iconSpinner} />
@@ -525,6 +527,7 @@ class LocationAutocompleteInputImplementation extends Component {
             <IconHourGlass />
           )}
         </div>
+        : null}
         <input
           className={inputClass}
           type="search"

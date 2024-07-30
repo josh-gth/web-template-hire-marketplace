@@ -10,6 +10,7 @@ const { Money } = types;
 
 const resolveDiscount = (listing, totalDays) => {
   const { publicData } = listing.attributes;
+  // console.log('publicData:', publicData);``
   const discounts = [
     { days: publicData.discountThreshold1, percentage: publicData.discountPercentage1 },
     { days: publicData.discountThreshold2, percentage: publicData.discountPercentage2 },
@@ -70,7 +71,7 @@ const getDateRangeQuantityAndLineItems = (orderData, code, listing) => {
   const quantity = bookingStart && bookingEnd ? countChargedDays(bookingStart, bookingEnd, includeSaturday, includeSunday) : null;
   const discountPercentage = resolveDiscount(listing, quantity);
 
-  console.log('orderData:', orderData);
+  console.log('orderData line 74:', orderData);
   console.log('Unit Price:', listing.attributes.price.amount);
   console.log('Total Amount before discount:', listing.attributes.price.amount * quantity);
   console.log('Discount Percentage:', discountPercentage);
@@ -188,6 +189,17 @@ exports.transactionLineItems = (listing, orderData, providerCommission, customer
   const unitPrice = listing.attributes.price;
   const currency = unitPrice.currency;
 
+  // Log the original orderData
+  console.log('orderData line 193:', orderData);
+
+  // Adjust bookingEnd to be -1 day
+  let bookingEndDate = new Date(orderData.bookingEnd);
+  bookingEndDate.setDate(bookingEndDate.getDate() - 1);
+  orderData.bookingEnd = bookingEndDate;
+  
+  // Log the adjusted orderData
+  console.log('Adjusted orderData:', orderData);
+
   /**
    * Pricing starts with order's base price:
    * Listing's price is related to a single unit. It needs to be multiplied by quantity
@@ -244,6 +256,8 @@ exports.transactionLineItems = (listing, orderData, providerCommission, customer
     quantity,
     includeFor: ['customer', 'provider'],
   };
+
+  console.log('orderData line 250:', orderData);
 
   // Provider commission reduces the amount of money that is paid out to provider.
   // Therefore, the provider commission line-item should have negative effect to the payout total.
