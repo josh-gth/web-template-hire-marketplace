@@ -66,7 +66,7 @@ const paymentFlow = (selectedPaymentMethod, saveAfterOnetimePayment) => {
  * @param {Object} config app-wide configs. This contains hosted configs too.
  * @returns orderParams.
  */
-const getOrderParams = (pageData, shippingDetails, optionalPaymentParams, config) => {
+const getOrderParams = (pageData, shippingDetails, optionalPaymentParams, config, deliveryOrPickup, deliveryAddress, deliveryInstructions) => {
   const quantity = pageData.orderData?.quantity;
   const quantityMaybe = quantity ? { quantity } : {};
   const deliveryMethod = pageData.orderData?.deliveryMethod;
@@ -80,6 +80,9 @@ const getOrderParams = (pageData, shippingDetails, optionalPaymentParams, config
       ...getTransactionTypeData(listingType, unitType, config),
       ...deliveryMethodMaybe,
       ...shippingDetails,
+      deliveryOrPickup,
+      deliveryAddress,
+      deliveryInstructions,
     },
   };
 
@@ -198,7 +201,7 @@ const handleSubmit = (values, process, props, stripe, submitting, setSubmitting)
     sessionStorageKey,
   } = props;
   const { card, message, paymentMethod: selectedPaymentMethod, formValues } = values;
-  const { saveAfterOnetimePayment: saveAfterOnetimePaymentRaw } = formValues;
+  const { saveAfterOnetimePayment: saveAfterOnetimePaymentRaw, deliveryOrPickup, deliveryAddress, deliveryInstructions } = formValues;
 
   const saveAfterOnetimePayment =
     Array.isArray(saveAfterOnetimePaymentRaw) && saveAfterOnetimePaymentRaw.length > 0;
@@ -249,7 +252,7 @@ const handleSubmit = (values, process, props, stripe, submitting, setSubmitting)
 
   // These are the order parameters for the first payment-related transition
   // which is either initiate-transition or initiate-transition-after-enquiry
-  const orderParams = getOrderParams(pageData, shippingDetails, optionalPaymentParams, config);
+  const orderParams = getOrderParams(pageData, shippingDetails, optionalPaymentParams, config, deliveryOrPickup, deliveryAddress, deliveryInstructions);
 
   // There are multiple XHR calls that needs to be made against Stripe API and Sharetribe Marketplace API on checkout with payments
   processCheckoutWithPayment(orderParams, requestPaymentParams)

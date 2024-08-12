@@ -16,6 +16,7 @@ import css from './EditListingLocationPanel.module.css';
 const getInitialValues = props => {
   const { listing } = props;
   const { geolocation, publicData } = listing?.attributes || {};
+  const pickupInstructions = publicData?.pickupInstructions || '';
 
   // Only render current search if full place object is available in the URL params
   // TODO bounds are missing - those need to be queried directly from Google Places
@@ -31,6 +32,7 @@ const getInitialValues = props => {
           selectedPlace: { address, origin: geolocation },
         }
       : null,
+    pickupInstructions,
   };
 };
 
@@ -73,7 +75,7 @@ const EditListingLocationPanel = props => {
         className={css.form}
         initialValues={state.initialValues}
         onSubmit={values => {
-          const { building = '', location } = values;
+          const { building = '', location, pickupInstructions } = values;
           const {
             selectedPlace: { address, origin },
           } = location;
@@ -83,6 +85,7 @@ const EditListingLocationPanel = props => {
             geolocation: origin,
             publicData: {
               location: { address, building },
+              pickupInstructions,
             },
           };
           // Save the initialValues to state

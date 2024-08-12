@@ -13,7 +13,7 @@ const LocationAutocompleteInputImpl = loadable(() =>
 class LocationAutocompleteInputComponent extends Component {
   render() {
     /* eslint-disable no-unused-vars */
-    const { rootClassName, labelClassName, hideErrorMessage, displayIcon, ...restProps } = this.props;
+    const { rootClassName, labelClassName, hideErrorMessage, hideIcon, ...restProps } = this.props;
     const { input, label, meta, valueFromForm, ...otherProps } = restProps;
     /* eslint-enable no-unused-vars */
 
@@ -28,7 +28,7 @@ class LocationAutocompleteInputComponent extends Component {
     return (
       <div className={rootClassName}>
         {labelInfo}
-        <LocationAutocompleteInputImpl {...locationAutocompleteProps} displayIcon={displayIcon} />
+        <LocationAutocompleteInputImpl {...locationAutocompleteProps} hideIcon={hideIcon} />
         {hideErrorMessage ? null : <ValidationError fieldMeta={meta} />}
       </div>
     );

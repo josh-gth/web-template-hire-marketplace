@@ -9,7 +9,7 @@ import { userDisplayNameAsString } from '../../../util/data';
 import { isMobileSafari } from '../../../util/userAgent';
 import { createSlug } from '../../../util/urlHelpers';
 
-import { AvatarLarge, NamedLink, UserDisplayName } from '../../../components';
+import { AvatarLarge, Heading, NamedLink, UserDisplayName } from '../../../components';
 
 import { stateDataShape } from '../TransactionPage.stateData';
 import SendMessageForm from '../SendMessageForm/SendMessageForm';
@@ -271,6 +271,25 @@ export class TransactionPanelComponent extends Component {
                 />
               </div>
             ) : null}
+
+            <div>
+            <Heading as="h4" rootClassName={css.deliveryAddressHeading}>Booking Details</Heading>
+            {protectedData?.deliveryOrPickup ?
+            <p className={css.deliveryMethod}><strong>Delivery Method:</strong> {protectedData.deliveryOrPickup.charAt(0).toUpperCase() + protectedData.deliveryOrPickup.slice(1)}</p>
+            : null}
+            {protectedData?.deliveryAddress ? 
+            <div>
+            <p className={css.deliveryAddress}><strong>Delivery Address:</strong> {protectedData.deliveryAddress}</p>
+            <p className={css.deliveryInstructions}><strong>Delivery Instructions:</strong> {protectedData.deliveryInstructions}</p>
+            </div>
+            : null}
+            {protectedData?.deliveryOrPickup === 'pickup' ?
+            <div>
+            <p className={css.pickupInstructions}><strong>Pickup Address:</strong> {listing.attributes.publicData.location.address}</p>
+            <p className={css.pickupInstructions}><strong>Pickup Instructions:</strong> {listing.attributes.publicData.pickupInstructions}</p>
+            </div>
+            : null}
+            </div>
 
             <FeedSection
               rootClassName={css.feedContainer}

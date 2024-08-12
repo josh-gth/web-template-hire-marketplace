@@ -111,6 +111,17 @@ export const EditListingLocationFormComponent = props => (
             })}
           />
 
+          <FieldTextInput
+            className={css.pickupInstructions}
+            type="text"
+            name="pickupInstructions"
+            id={`${formId}pickupInstructions`}
+            label={intl.formatMessage({ id: 'EditListingLocationForm.pickupInstructions' }, { optionalText })}
+            placeholder={intl.formatMessage({
+              id: 'EditListingLocationForm.pickupInstructionsPlaceholder',
+            })}
+          />
+
           <Button
             className={css.submitButton}
             type="submit"

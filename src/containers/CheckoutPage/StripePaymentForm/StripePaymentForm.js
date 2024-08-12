@@ -1,11 +1,12 @@
 /**
  * Note: This form is using card from Stripe Elements https://stripe.com/docs/stripe-js#elements
- * Card is not a Final Form field so it's not available trough Final Form.
+ * Card is not a Final Form field so it's not available through Final Form.
  * It's also handled separately in handleSubmit function.
  */
 import React, { Component } from 'react';
 import { bool, func, object, shape, string } from 'prop-types';
 import { Form as FinalForm } from 'react-final-form';
+import { Field } from 'react-final-form';
 import classNames from 'classnames';
 
 import { FormattedMessage, injectIntl, intlShape } from '../../../util/reactIntl';
@@ -18,6 +19,7 @@ import {
   PrimaryButton,
   FieldCheckbox,
   FieldTextInput,
+  FieldSelect,
   IconSpinner,
   SavedCardDetails,
   StripePaymentAddress,
@@ -180,8 +182,8 @@ const getPaymentMethod = (selectedPaymentMethod, hasDefaultPaymentMethod) => {
   return selectedPaymentMethod == null && hasDefaultPaymentMethod
     ? 'defaultCard'
     : selectedPaymentMethod == null
-    ? 'onetimeCardPayment'
-    : selectedPaymentMethod;
+      ? 'onetimeCardPayment'
+      : selectedPaymentMethod;
 };
 
 // Should we show onetime payment fields and does StripeElements card need attention
@@ -223,8 +225,8 @@ const LocationOrShippingDetails = props => {
   const locationDetails = listingLocation?.building
     ? `${listingLocation.building}, ${listingLocation.address}`
     : listingLocation?.address
-    ? listingLocation.address
-    : intl.formatMessage({ id: 'StripePaymentForm.locationUnknown' });
+      ? listingLocation.address
+      : intl.formatMessage({ id: 'StripePaymentForm.locationUnknown' });
 
   return askShippingDetails ? (
     <ShippingDetails intl={intl} formApi={formApi} locale={locale} />
@@ -253,6 +255,9 @@ const initialState = {
   paymentMethod: null,
 };
 
+// Validator to ensure fields are required
+const required = value => (value ? undefined : 'This field is required');
+
 /**
  * Payment form that asks for credit card info using Stripe Elements.
  *
@@ -266,7 +271,10 @@ const initialState = {
 class StripePaymentForm extends Component {
   constructor(props) {
     super(props);
-    this.state = initialState;
+    this.state = {
+      ...initialState,
+      deliveryOrPickup: '',
+    };
     this.updateBillingDetailsToMatchShippingAddress = this.updateBillingDetailsToMatchShippingAddress.bind(
       this
     );
@@ -383,6 +391,7 @@ class StripePaymentForm extends Component {
       };
     });
   }
+
   handleSubmit(values) {
     const {
       onSubmit,
@@ -466,7 +475,12 @@ class StripePaymentForm extends Component {
       hasHandledCardPayment
     );
 
-    const submitDisabled = invalid || onetimePaymentNeedsAttention || submitInProgress;
+    const submitDisabled =
+      invalid ||
+      onetimePaymentNeedsAttention ||
+      submitInProgress ||
+      (this.state.deliveryOrPickup === 'delivery' && !values.deliveryAddress);
+      
     const hasCardError = this.state.error && !submitInProgress;
     const hasPaymentErrors = confirmCardPaymentError || confirmPaymentError;
     const classes = classNames(rootClassName || css.root, className);
@@ -487,10 +501,10 @@ class StripePaymentForm extends Component {
       confirmCardPaymentError && confirmCardPaymentError.code === piAuthenticationFailure
         ? intl.formatMessage({ id: 'StripePaymentForm.confirmCardPaymentError' })
         : confirmCardPaymentError
-        ? confirmCardPaymentError.message
-        : confirmPaymentError
-        ? intl.formatMessage({ id: 'StripePaymentForm.confirmPaymentError' })
-        : intl.formatMessage({ id: 'StripePaymentForm.genericError' });
+          ? confirmCardPaymentError.message
+          : confirmPaymentError
+            ? intl.formatMessage({ id: 'StripePaymentForm.confirmPaymentError' })
+            : intl.formatMessage({ id: 'StripePaymentForm.genericError' });
 
     const billingDetailsNameLabel = intl.formatMessage({
       id: 'StripePaymentForm.billingDetailsNameLabel',
@@ -532,6 +546,8 @@ class StripePaymentForm extends Component {
       const checked = event.target.checked;
       this.updateBillingDetailsToMatchShippingAddress(checked);
     };
+
+
     const isBookingYesNo = isBooking ? 'yes' : 'no';
 
     return hasStripeKey ? (
@@ -637,6 +653,47 @@ class StripePaymentForm extends Component {
               placeholder={messagePlaceholder}
               className={css.message}
             />
+
+            <FieldSelect
+              id={`${formId}-deliveryOrPickup`}
+              name="deliveryOrPickup"
+              label="Delivery Method"
+              validate={required}
+              onChange={(value) => this.setState({ deliveryOrPickup: value })} // Handle delivery method change
+            >
+              <option disabled value="">
+                Select delivery method
+              </option>
+              <option value="pickup">Pickup</option>
+              <option value="delivery">Delivery</option>
+            </FieldSelect>
+
+
+            {this.state.deliveryOrPickup === 'delivery' ? (
+              <>
+                <FieldTextInput
+                  type="textarea"
+                  id={`${formId}-deliveryAddress`}
+                  name="deliveryAddress"
+                  label="Delivery Address"
+                  placeholder="Delivery Address"
+                  className={css.deliveryAddress}
+                  validate={required} // Add validation for deliveryAddress
+                />
+                <FieldTextInput
+                  type="textarea"
+                  id={`${formId}-deliveryInstructions`}
+                  name="deliveryInstructions"
+                  label="Delivery Instructions"
+                  placeholder="Delivery Instructions"
+                  className={css.deliveryInstructions}
+                />
+              </>
+            ) : this.state.deliveryOrPickup === 'pickup' ? (
+              <p className={css.pickupMessage}>
+                Exact pickup address and pickup instructions will be available after your booking is confirmed.
+              </p>
+            ) : null}
           </div>
         ) : null}
         <div className={css.submitContainer}>
@@ -647,7 +704,7 @@ class StripePaymentForm extends Component {
             className={css.submitButton}
             type="submit"
             inProgress={submitInProgress}
-            disabled={submitDisabled}
+            disabled={submitDisabled} // This ensures the button is disabled if the form is invalid
           >
             {billingDetailsNeeded ? (
               <FormattedMessage

@@ -25,7 +25,9 @@ const CategorySelectField = ({ categories, intl }) => (
           // label={intl.formatMessage({ id: 'SectionHeroSearchForm.categoryPlaceholder' })}
           style={{ width: '100%', border: 'none' }}
           inputProps={{ 'aria-label': 'Without label' }}
+          variant="standard"
           displayEmpty
+          disableUnderline
         >
           <MenuItem value="">
             <em>{intl.formatMessage({ id: 'SectionHeroSearchForm.categoryPlaceholder' })}</em>
@@ -60,7 +62,7 @@ const LocationSearchField = ({ intl, inputRef, onLocationChange }) => (
             input={{ ...restInput, onChange: searchOnChange }}
             meta={meta}
             placeholder={intl.formatMessage({ id: 'SectionHeroSearchForm.locationPlaceholder' })}
-            displayIcon={false}
+            hideIcon={true}
           />
         );
       }}
@@ -116,14 +118,12 @@ const SectionHeroSearchFormComponent = props => {
         const { handleSubmit, values } = formRenderProps;
         const isFormValid = values.category && values.location && values.location.selectedPlace;
         return (
-          <Box style={{ backgroundColor: 'white', padding: 10, borderRadius: 50 }}>
+          <Box style={{ backgroundColor: 'white', padding: 4, borderRadius: 50 }}>
             <form onSubmit={handleSubmit} className={css.searchForm}>
               <Stack direction="row" spacing={2} alignItems="center">
-                <IconButton>
-                  <LocationIcon />
-                </IconButton>
+                <LocationIcon style={{ marginLeft: 12}}/>
                 <LocationSearchField intl={intl} inputRef={element => { searchInput = element; }} onLocationChange={onChange} />
-                <Divider orientation="vertical" variant="middle" flexItem />
+                <Divider orientation="vertical" variant="middle" flexItem style={{ marginTop: 6, marginBottom: 6 }} />
                 <CategorySelectField categories={categories} intl={intl} />
                 <Button
                   variant="contained"
