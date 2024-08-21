@@ -121,16 +121,20 @@ const SectionHeroSearchFormComponent = props => {
           <Box style={{ backgroundColor: 'white', padding: 4, borderRadius: 50 }}>
             <form onSubmit={handleSubmit} className={css.searchForm}>
               <Stack direction="row" spacing={2} alignItems="center">
-                <LocationIcon style={{ marginLeft: 12}}/>
+                <LocationIcon style={{ marginLeft: 12 }} />
                 <LocationSearchField intl={intl} inputRef={element => { searchInput = element; }} onLocationChange={onChange} />
                 <Divider orientation="vertical" variant="middle" flexItem style={{ marginTop: 6, marginBottom: 6 }} />
                 <CategorySelectField categories={categories} intl={intl} />
                 <Button
                   variant="contained"
-                  style={{ marginLeft: 10, borderRadius: 100, padding: 20 }}
+                  style={{
+                    marginLeft: 10,
+                    borderRadius: 100,
+                    padding: 20,
+                    backgroundColor: isFormValid ? '#FE9900' : '#B0B0B0', // Set primary color for enabled state
+                  }}
                   type="submit"
                   disabled={!isFormValid}
-                  color={isFormValid ? 'primary' : 'grey'}
                 >
                   <SearchIcon />
                 </Button>

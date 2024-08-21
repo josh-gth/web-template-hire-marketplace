@@ -186,7 +186,7 @@ const OrderPanel = props => {
   } = props;
 
   const publicData = listing?.attributes?.publicData || {};
-  const { listingType, unitType, transactionProcessAlias = '' } = publicData || {};
+  const { listingType, unitType, transactionProcessAlias = '', deliveryWeight, deliveryPricePerKm } = publicData || {};
   const processName = resolveLatestProcessName(transactionProcessAlias.split('/')[0]);
   const lineItemUnitType = lineItemUnitTypeMaybe || `line-item/${unitType}`;
 
@@ -294,6 +294,9 @@ const OrderPanel = props => {
             <FormattedMessage id="OrderPanel.author" values={{ name: authorDisplayName }} />
           </span>
         </div>
+        <span className={css.providerNamePlain}>
+           Delivery Price is ${deliveryPricePerKm * deliveryWeight} per km.
+        </span>
 
         {showPriceMissing ? (
           <PriceMissing />
@@ -342,6 +345,8 @@ const OrderPanel = props => {
             fetchLineItemsInProgress={fetchLineItemsInProgress}
             fetchLineItemsError={fetchLineItemsError}
             payoutDetailsWarning={payoutDetailsWarning}
+            deliveryWeight={deliveryWeight}
+            deliveryPricePerKm={deliveryPricePerKm}
           />
         ) : showProductOrderForm ? (
           <ProductOrderForm
@@ -410,6 +415,7 @@ const OrderPanel = props => {
           </PrimaryButton>
         )}
       </div>
+      {/* <button onClick={() => console.log(publicData)}>Log Public Data</button> */}
     </div>
   );
 };

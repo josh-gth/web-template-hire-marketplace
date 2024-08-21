@@ -3,7 +3,7 @@
  * Card is not a Final Form field so it's not available through Final Form.
  * It's also handled separately in handleSubmit function.
  */
-import React, { Component } from 'react';
+import React, { Component, useEffect } from 'react';
 import { bool, func, object, shape, string } from 'prop-types';
 import { Form as FinalForm } from 'react-final-form';
 import { Field } from 'react-final-form';
@@ -23,11 +23,20 @@ import {
   IconSpinner,
   SavedCardDetails,
   StripePaymentAddress,
+  FieldLocationAutocompleteInput,
 } from '../../../components';
+
+import {
+  autocompleteSearchRequired,
+  autocompletePlaceSelected,
+  composeValidators,
+} from '../../../util/validators';
 
 import ShippingDetails from '../ShippingDetails/ShippingDetails';
 
 import css from './StripePaymentForm.module.css';
+
+const identity = v => v;
 
 /**
  * Translate a Stripe API error object.
@@ -480,7 +489,7 @@ class StripePaymentForm extends Component {
       onetimePaymentNeedsAttention ||
       submitInProgress ||
       (this.state.deliveryOrPickup === 'delivery' && !values.deliveryAddress);
-      
+
     const hasCardError = this.state.error && !submitInProgress;
     const hasPaymentErrors = confirmCardPaymentError || confirmPaymentError;
     const classes = classNames(rootClassName || css.root, className);
@@ -550,8 +559,30 @@ class StripePaymentForm extends Component {
 
     const isBookingYesNo = isBooking ? 'yes' : 'no';
 
+    const addressRequiredMessage = intl.formatMessage({
+      id: 'EditListingLocationForm.addressRequired',
+    });
+    const addressNotRecognizedMessage = intl.formatMessage({
+      id: 'EditListingLocationForm.addressNotRecognized',
+    });
+
+    // Function to call Mapbox Distance API to get distance between map location and address
+    const handleAutocompleteLocationSelected = () => {
+      console.log('handleAutocompleteLocationSelected triggered', values.deliveryAddress.selectedPlace.address);
+    };
+
+    // useEffect to call handleAutocompleteLocationSelected when the user selects a location from the autocomplete
+    useEffect(() => {
+      if (values.deliveryAddress) {
+      if (values.deliveryAddress.selectedPlace) {
+        handleAutocompleteLocationSelected();
+      }
+    }
+    },[values]);
+
     return hasStripeKey ? (
       <Form className={classes} onSubmit={handleSubmit} enforcePagePreloadFor="OrderDetailsPage">
+        <button onClick={() => console.log('values', values)}>Log Values</button>
         <LocationOrShippingDetails
           askShippingDetails={askShippingDetails}
           showPickUplocation={showPickUplocation}
@@ -562,6 +593,84 @@ class StripePaymentForm extends Component {
           locale={locale}
           intl={intl}
         />
+
+        {showInitialMessageInput ? (
+          <div>
+            <Heading as="h3" rootClassName={css.heading}>
+              <FormattedMessage id="StripePaymentForm.messageHeading" />
+            </Heading>
+
+            <FieldSelect
+              id={`${formId}-deliveryOrPickup`}
+              name="deliveryOrPickup"
+              label="Delivery Method"
+              validate={required}
+              onChange={(value) => this.setState({ deliveryOrPickup: value })} // Handle delivery method change
+            >
+              <option disabled value="">
+                Select delivery method
+              </option>
+              <option value="pickup">Pickup</option>
+              <option value="delivery">Delivery</option>
+            </FieldSelect>
+
+
+            {this.state.deliveryOrPickup === 'delivery' ? (
+              <>
+                {/* <FieldTextInput
+                  type="textarea"
+                  id={`${formId}-deliveryAddress`}
+                  name="deliveryAddress"
+                  label="Delivery Address"
+                  placeholder="Delivery Address"
+                  className={css.deliveryAddress}
+                  validate={required} // Add validation for deliveryAddress
+                /> */}
+                <FieldLocationAutocompleteInput
+                  rootClassName={css.locationAddress}
+                  inputClassName={css.locationAutocompleteInput}
+                  iconClassName={css.locationAutocompleteInputIcon}
+                  predictionsClassName={css.predictionsRoot}
+                  validClassName={css.validLocation}
+                  name="deliveryAddress"
+                  label="Delivery Address"
+                  placeholder={intl.formatMessage({
+                    id: 'EditListingLocationForm.addressPlaceholder',
+                  })}
+                  useDefaultPredictions={false}
+                  format={identity}
+                  valueFromForm={values.location}
+                  validate={composeValidators(
+                    autocompleteSearchRequired(addressRequiredMessage),
+                    autocompletePlaceSelected(addressNotRecognizedMessage)
+                  )}
+                  
+                />
+                <FieldTextInput
+                  type="textarea"
+                  id={`${formId}-deliveryInstructions`}
+                  name="deliveryInstructions"
+                  label="Delivery Instructions"
+                  placeholder="Delivery Instructions"
+                  className={css.deliveryInstructions}
+                />
+              </>
+            ) : this.state.deliveryOrPickup === 'pickup' ? (
+              <p className={css.pickupMessage}>
+                Exact pickup address and pickup instructions will be available after your booking is confirmed.
+              </p>
+            ) : null}
+
+            <FieldTextInput
+              type="textarea"
+              id={`${formId}-message`}
+              name="initialMessage"
+              label={initialMessageLabel}
+              placeholder={messagePlaceholder}
+              className={css.message}
+            />
+          </div>
+        ) : null}
 
         {billingDetailsNeeded && !loadingData ? (
           <React.Fragment>
@@ -639,63 +748,7 @@ class StripePaymentForm extends Component {
         {initiateOrderError ? (
           <span className={css.errorMessage}>{initiateOrderError.message}</span>
         ) : null}
-        {showInitialMessageInput ? (
-          <div>
-            <Heading as="h3" rootClassName={css.heading}>
-              <FormattedMessage id="StripePaymentForm.messageHeading" />
-            </Heading>
 
-            <FieldTextInput
-              type="textarea"
-              id={`${formId}-message`}
-              name="initialMessage"
-              label={initialMessageLabel}
-              placeholder={messagePlaceholder}
-              className={css.message}
-            />
-
-            <FieldSelect
-              id={`${formId}-deliveryOrPickup`}
-              name="deliveryOrPickup"
-              label="Delivery Method"
-              validate={required}
-              onChange={(value) => this.setState({ deliveryOrPickup: value })} // Handle delivery method change
-            >
-              <option disabled value="">
-                Select delivery method
-              </option>
-              <option value="pickup">Pickup</option>
-              <option value="delivery">Delivery</option>
-            </FieldSelect>
-
-
-            {this.state.deliveryOrPickup === 'delivery' ? (
-              <>
-                <FieldTextInput
-                  type="textarea"
-                  id={`${formId}-deliveryAddress`}
-                  name="deliveryAddress"
-                  label="Delivery Address"
-                  placeholder="Delivery Address"
-                  className={css.deliveryAddress}
-                  validate={required} // Add validation for deliveryAddress
-                />
-                <FieldTextInput
-                  type="textarea"
-                  id={`${formId}-deliveryInstructions`}
-                  name="deliveryInstructions"
-                  label="Delivery Instructions"
-                  placeholder="Delivery Instructions"
-                  className={css.deliveryInstructions}
-                />
-              </>
-            ) : this.state.deliveryOrPickup === 'pickup' ? (
-              <p className={css.pickupMessage}>
-                Exact pickup address and pickup instructions will be available after your booking is confirmed.
-              </p>
-            ) : null}
-          </div>
-        ) : null}
         <div className={css.submitContainer}>
           {hasPaymentErrors ? (
             <span className={css.errorMessage}>{paymentErrorMessage}</span>

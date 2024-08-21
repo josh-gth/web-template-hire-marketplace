@@ -99,6 +99,12 @@ export const EditListingPricingFormComponent = props => {
           intl
         );
 
+        //Ensures that the weight is a number, and contains no text
+
+
+        // Validator to ensure fields are required
+        const required = value => (value ? undefined : 'This field is required');
+
         const classes = classNames(css.root, className);
         const submitReady = (updated && pristine) || ready;
         const submitInProgress = updateInProgress;
@@ -129,6 +135,28 @@ export const EditListingPricingFormComponent = props => {
               placeholder={intl.formatMessage({ id: 'EditListingPricingForm.priceInputPlaceholder' })}
               currencyConfig={appSettings.getCurrencyFormatting(marketplaceCurrency)}
               validate={priceValidators}
+            />
+            {/* Currency field for delivery price per 1000kg/km */}
+            <FieldCurrencyInput
+              id={`${formId}price`}
+              name="deliveryPricePerKm"
+              className={css.input}
+              label={intl.formatMessage(
+                { id: 'EditListingPricingForm.deliveryPricePerKm' },
+                { unitType }
+              )}
+              placeholder={intl.formatMessage({ id: 'EditListingPricingForm.deliveryPricePerKmPlaceholder' })}
+              currencyConfig={appSettings.getCurrencyFormatting(marketplaceCurrency)}
+              validate={priceValidators}
+            />
+            {/* Weight field for delivery price per 1000kg/km */}
+            <FieldTextInput
+              id={`${formId}deliveryWeight`}
+              name="deliveryWeight"
+              className={css.input}
+              label={intl.formatMessage({ id: 'EditListingPricingForm.deliveryWeight' })}
+              placeholder={intl.formatMessage({ id: 'EditListingPricingForm.deliveryWeightPlaceholder' })}
+              validate={required}
             />
 
             <H3 as="h1">

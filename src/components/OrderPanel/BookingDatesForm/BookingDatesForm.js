@@ -454,6 +454,8 @@ export const BookingDatesFormComponent = props => {
     dayCountAvailableForBooking,
     marketplaceName,
     payoutDetailsWarning,
+    deliveryWeight,
+    deliveryPricePerKm,
     ...rest
   } = props;
   const classes = classNames(rootClassName || css.root, className);
@@ -595,10 +597,10 @@ export const BookingDatesFormComponent = props => {
                 const parsedEnd = endDate
                   ? getStartOf(timeOfDayFromLocalToTimeZone(endDate, timeZone), 'day', timeZone)
                   : endDate;
-                  // console.log('parsedStart:', parsedStart);
-                  // console.log('endDate?:', endDate);
-                  // console.log('parsedEnd:', parsedEnd); 
-                  // console.log('timeZone:', timeZone);
+                // console.log('parsedStart:', parsedStart);
+                // console.log('endDate?:', endDate);
+                // console.log('parsedEnd:', parsedEnd); 
+                // console.log('timeZone:', timeZone);
                 return v ? { startDate: parsedStart, endDate: parsedEnd } : v;
               }}
               useMobileMargins
@@ -679,6 +681,10 @@ export const BookingDatesFormComponent = props => {
               </PrimaryButton>
             </div>
             <p className={css.finePrint}>
+              {deliveryPricePerKm &&
+                <FormattedMessage id="BookingDatesForm.deliveryMessage" values={{ deliveryRate: (deliveryPricePerKm.amount / 100) * (deliveryWeight / 1000) }} />
+              }
+              <br />
               {payoutDetailsWarning ? (
                 payoutDetailsWarning
               ) : (

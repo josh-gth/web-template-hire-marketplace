@@ -279,7 +279,8 @@ export class TransactionPanelComponent extends Component {
             : null}
             {protectedData?.deliveryAddress ? 
             <div>
-            <p className={css.deliveryAddress}><strong>Delivery Address:</strong> {protectedData.deliveryAddress}</p>
+            <p className={css.deliveryAddress}><strong>Delivery Address:</strong> {protectedData.deliveryAddress.selectedPlace.address}</p>
+            {/* <button onClick={() => console.log(protectedData)}>Log Protected Data</button> */}
             <p className={css.deliveryInstructions}><strong>Delivery Instructions:</strong> {protectedData.deliveryInstructions}</p>
             </div>
             : null}

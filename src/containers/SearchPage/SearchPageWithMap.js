@@ -309,10 +309,14 @@ export class SearchPageComponent extends Component {
       listingFieldsConfig,
       activeListingTypes
     );
+
+    const secondaryFiltersToDisplay = 2; // Set how many secondary filters to display in the primary section
+    const remainingSecondaryFilters = customSecondaryFilters.slice(secondaryFiltersToDisplay); // Slice the rest
     const availablePrimaryFilters = [
       ...builtInPrimaryFilters,
       ...customPrimaryFilters,
       ...builtInFilters,
+      ...customSecondaryFilters.slice(0, secondaryFiltersToDisplay), // Use the variable here
     ];
     const availableFilters = [
       ...builtInPrimaryFilters,
@@ -503,7 +507,7 @@ export class SearchPageComponent extends Component {
                   resetAll={this.resetAll}
                   onClosePanel={() => this.setState({ isSecondaryFiltersOpen: false })}
                 >
-                  {customSecondaryFilters.map(filterConfig => {
+                  {remainingSecondaryFilters.map(filterConfig => {
                     const key = `SearchFiltersSecondary.${filterConfig.scope || 'built-in'}.${
                       filterConfig.key
                     }`;

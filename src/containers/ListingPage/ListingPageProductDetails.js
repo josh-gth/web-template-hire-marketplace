@@ -107,13 +107,13 @@ const ListingPageProductDetails = ({ productFamily, productId }) => {
             {sortedEntries.map(([key, value]) => {
               const { key: formattedKey, value: formattedValue } = formatAttributeWithUnits(key, value);
               return (
-                <TableRow key={key}>
-                  <TableCell component="th" scope="row">
+                <TableRow key={key} >
+                  <TableCell component="th" scope="row" style={{paddingTop: "6px", paddingBottom: "6px"}}>
                     <p className={css.text}>
                       {formattedKey}
                     </p>
                   </TableCell>
-                  <TableCell align="right">
+                  <TableCell align="right" style={{paddingTop: "6px", paddingBottom: "6px"}}>
                     <p className={css.text}><strong>{formattedValue}</strong></p>
                   </TableCell>
                 </TableRow>
