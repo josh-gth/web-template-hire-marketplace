@@ -25,6 +25,29 @@ const resolveDiscount = (listing, totalDays) => {
   return discount ? discount.percentage : 0;
 };
 
+// Calculate delivery fee if applicable
+const resolveDeliveryFee = (orderData, listing) => {
+  console.log('resolveDeliveryFee orderData:', orderData);
+  const { deliveryWeight, deliveryPricePerKm, deliveryPriceMinimum } = listing.attributes.publicData;
+  const { deliveryDistance } = orderData;
+  console.log('deliveryWeight:', deliveryWeight);
+  console.log('deliveryPricePerKm:', deliveryPricePerKm);
+  console.log('deliveryDistance:', deliveryDistance);
+  console.log('deliveryPriceMinimum:', deliveryPriceMinimum);
+
+  if (!deliveryWeight || !deliveryPricePerKm || !deliveryDistance || !deliveryPriceMinimum) {
+    return null; // Return null if any required data is missing
+  }
+
+  // Calculate the total delivery cost
+  const totalFeeAmount = (deliveryWeight/1000) * deliveryPricePerKm.amount * deliveryDistance;
+  const greaterFeeAmount = totalFeeAmount > deliveryPriceMinimum.amount ? totalFeeAmount : deliveryPriceMinimum.amount;
+  console.log('totalFeeAmount =' + '(deliveryWeight: ' + deliveryWeight  + ')/1000' + ' * deliveryPricePerKm.amount: '+ deliveryPricePerKm.amount + ' * deliveryDistance:  '  + deliveryDistance);
+  console.log('totalFeeAmount:', totalFeeAmount);
+  console.log('greaterFeeAmount:', greaterFeeAmount);
+  return new Money(Math.round(greaterFeeAmount), deliveryPricePerKm.currency);
+};
+
 const countChargedDays = (startDate, endDate, includeSaturday, includeSunday) => {
   let count = 0;
   let currentDate = new Date(startDate);
@@ -72,22 +95,23 @@ const getDateRangeQuantityAndLineItems = (orderData, code, listing) => {
   const discountPercentage = resolveDiscount(listing, quantity);
 
   console.log('orderData line 74:', orderData);
+  console.log('listing.attributes.publicData:', listing.attributes.publicData);
   console.log('Unit Price:', listing.attributes.price.amount);
   console.log('Total Amount before discount:', listing.attributes.price.amount * quantity);
   console.log('Discount Percentage:', discountPercentage);
 
   const discountLineItem = discountPercentage
     ? [
-        {
-          code: `line-item/discount-${discountPercentage}%`,
-          unitPrice: new Money(
-            -Math.round((listing.attributes.price.amount * quantity * discountPercentage) / 100),
-            listing.attributes.price.currency
-          ),
-          quantity: 1,
-          includeFor: ['customer', 'provider'],
-        },
-      ]
+      {
+        code: `line-item/discount-${discountPercentage}%`,
+        unitPrice: new Money(
+          -Math.round((listing.attributes.price.amount * quantity * discountPercentage) / 100),
+          listing.attributes.price.currency
+        ),
+        quantity: 1,
+        includeFor: ['customer', 'provider'],
+      },
+    ]
     : [];
 
   return { quantity, extraLineItems: discountLineItem };
@@ -112,26 +136,26 @@ const getItemQuantityAndLineItems = (orderData, publicData, currency) => {
   // Calculate shipping fee if applicable
   const shippingFee = isShipping
     ? calculateShippingFee(
-        shippingPriceInSubunitsOneItem,
-        shippingPriceInSubunitsAdditionalItems,
-        currency,
-        quantity
-      )
+      shippingPriceInSubunitsOneItem,
+      shippingPriceInSubunitsAdditionalItems,
+      currency,
+      quantity
+    )
     : null;
 
   // Add line-item for given delivery method.
   // Note: by default, pickup considered as free.
   const deliveryLineItem = !!shippingFee
     ? [
-        {
-          code: 'line-item/shipping-fee',
-          unitPrice: shippingFee,
-          quantity: 1,
-          includeFor: ['customer', 'provider'],
-        },
-      ]
+      {
+        code: 'line-item/shipping-fee',
+        unitPrice: shippingFee,
+        quantity: 1,
+        includeFor: ['customer', 'provider'],
+      },
+    ]
     : isPickup
-    ? [
+      ? [
         {
           code: 'line-item/pickup-fee',
           unitPrice: new Money(0, currency),
@@ -139,7 +163,7 @@ const getItemQuantityAndLineItems = (orderData, publicData, currency) => {
           includeFor: ['customer', 'provider'],
         },
       ]
-    : [];
+      : [];
 
   return { quantity, extraLineItems: deliveryLineItem };
 };
@@ -190,13 +214,13 @@ exports.transactionLineItems = (listing, orderData, providerCommission, customer
   const currency = unitPrice.currency;
 
   // Log the original orderData
-  console.log('orderData line 193:', orderData);
+  console.log('orderData line 208:', orderData);
 
   // Adjust bookingEnd to be -1 day
   let bookingEndDate = new Date(orderData.bookingEnd);
   bookingEndDate.setDate(bookingEndDate.getDate() - 1);
   orderData.bookingEnd = bookingEndDate;
-  
+
   // Log the adjusted orderData
   console.log('Adjusted orderData:', orderData);
 
@@ -222,10 +246,10 @@ exports.transactionLineItems = (listing, orderData, providerCommission, customer
     unitType === 'item'
       ? getItemQuantityAndLineItems(orderData, publicData, currency)
       : unitType === 'hour'
-      ? getHourQuantityAndLineItems(orderData)
-      : ['day', 'night'].includes(unitType)
-      ? getDateRangeQuantityAndLineItems(orderData, code, listing)
-      : {};
+        ? getHourQuantityAndLineItems(orderData)
+        : ['day', 'night'].includes(unitType)
+          ? getDateRangeQuantityAndLineItems(orderData, code, listing)
+          : {};
 
   const { quantity, extraLineItems } = quantityAndExtraLineItems;
 
@@ -246,7 +270,7 @@ exports.transactionLineItems = (listing, orderData, providerCommission, customer
    * line-item/night, line-item/day, line-item/hour or line-item/item.
    *
    * Pre-definded commission components expects line item code to be one of the following:
-   * 'line-item/provider-commission', 'line-item/customer-commission'
+   * 'line-item/provider-commission', 'line-item/custeomer-commission'
    *
    * By default OrderBreakdown prints line items inside LineItemUnknownItemsMaybe if the lineItem code is not recognized. */
 
@@ -257,7 +281,32 @@ exports.transactionLineItems = (listing, orderData, providerCommission, customer
     includeFor: ['customer', 'provider'],
   };
 
-  console.log('orderData line 250:', orderData);
+  const deliveryFeePrice = orderData.deliveryDistance ? resolveDeliveryFee(orderData, listing) : null;
+  // const deliveryFeePrice = new Money( 0, 'AUD' );
+  const deliveryFee = deliveryFeePrice && orderData.deliveryDistance
+    ? [
+      {
+        code: `line-item/delivery-fee${ ': ~' + orderData.deliveryDistance + 'km'}`,
+        unitPrice: deliveryFeePrice,
+        quantity: 1,
+        includeFor: ['customer', 'provider'],
+      },
+    ]
+    : [];
+
+    console.log('deliveryFeePrice:', deliveryFeePrice);
+    console.log('deliveryFee:', deliveryFee);
+
+  // const helmetFeePrice = new Money(500, 'AUD');
+  // const helmetFee = 
+  //     [{
+  //       code: 'line-item/helmet-rental-fee',
+  //       unitPrice: helmetFeePrice,
+  //       quantity: 1,
+  //       includeFor: ['customer', 'provider'],
+  //     }]
+
+  console.log('orderData line 298:', orderData);
 
   // Provider commission reduces the amount of money that is paid out to provider.
   // Therefore, the provider commission line-item should have negative effect to the payout total.
@@ -273,13 +322,13 @@ exports.transactionLineItems = (listing, orderData, providerCommission, customer
   // orderPrice - providerCommission = providerPayout
   const providerCommissionMaybe = hasCommissionPercentage(providerCommission)
     ? [
-        {
-          code: 'line-item/provider-commission',
-          unitPrice: calculateTotalFromLineItems([order]),
-          percentage: getNegation(providerCommission.percentage),
-          includeFor: ['provider'],
-        },
-      ]
+      {
+        code: 'line-item/provider-commission',
+        unitPrice: calculateTotalFromLineItems([order, ...deliveryFee]),
+        percentage: getNegation(providerCommission.percentage),
+        includeFor: ['provider'],
+      },
+    ]
     : [];
 
   // The customer commission is what the customer pays for the transaction, and
@@ -287,13 +336,13 @@ exports.transactionLineItems = (listing, orderData, providerCommission, customer
   // orderPrice + customerCommission = customerPayin
   const customerCommissionMaybe = hasCommissionPercentage(customerCommission)
     ? [
-        {
-          code: 'line-item/customer-commission',
-          unitPrice: calculateTotalFromLineItems([order]),
-          percentage: customerCommission.percentage,
-          includeFor: ['customer'],
-        },
-      ]
+      {
+        code: 'line-item/customer-commission',
+        unitPrice: calculateTotalFromLineItems([order]),
+        percentage: customerCommission.percentage,
+        includeFor: ['customer'],
+      },
+    ]
     : [];
 
   // Let's keep the base price (order) as first line item and provider and customer commissions as last.
@@ -301,6 +350,7 @@ exports.transactionLineItems = (listing, orderData, providerCommission, customer
   const lineItems = [
     order,
     ...extraLineItems,
+    ...deliveryFee,
     ...providerCommissionMaybe,
     ...customerCommissionMaybe,
   ];

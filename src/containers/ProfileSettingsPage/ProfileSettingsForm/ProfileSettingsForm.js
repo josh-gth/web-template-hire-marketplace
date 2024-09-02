@@ -20,6 +20,7 @@ import {
   ImageFromFile,
   IconSpinner,
   FieldTextInput,
+  H3,
   H4,
   CustomExtendedDataField,
 } from '../../../components';
@@ -248,6 +249,12 @@ class ProfileSettingsFormComponent extends Component {
             userTypeConfig?.userType,
             false
           );
+          console.log('userFieldProps:', userFieldProps);
+
+        //Function to filter out the userFeilds that's keys contain the word 'discount'
+        const filteredUserFields = (filter) => {
+          return userFieldProps.filter(userField => userField.key.includes(filter));
+        }
 
           return (
             <Form
@@ -370,17 +377,41 @@ class ProfileSettingsFormComponent extends Component {
                 </p>
               </div>
 
-              <H4 as="h2" className={css.sectionTitle}>
-                <FormattedMessage id="ProfileSettingsForm.discountHeading" />
-              </H4>
+              {/* Custom Defaults Section */}
+              <H3 as="h1" className={css.sectionTitle}>
+                <FormattedMessage id="ProfileSettingsForm.defaultsHeading" />
+              </H3>
               <p className={css.extraInfo}>
-                <FormattedMessage id="ProfileSettingsForm.discountInfo"  />
+                <FormattedMessage id="ProfileSettingsForm.defaultsInfo"  />
               </p>
+
+              {/* Delivery Fields Section */}
+              <H4 as="h2" className={css.sectionTitle}>
+                <FormattedMessage id="ProfileSettingsForm.deliveryHeading" />
+              </H4>
+              {/* <p className={css.extraInfo}>
+                <FormattedMessage id="ProfileSettingsForm.deliveryInfo"  />
+              </p> */}
               <div className={classNames(css.sectionContainer, css.lastSection)}>
-                {userFieldProps.map(fieldProps => (
+                {filteredUserFields('Delivery').map(fieldProps => (
                   <CustomExtendedDataField {...fieldProps} formId={formId} />
                 ))}
               </div>
+
+              {/* Discount Fields Section */}
+              <H4 as="h2" className={css.sectionTitle}>
+                <FormattedMessage id="ProfileSettingsForm.discountHeading" />
+              </H4>
+              {/* <p className={css.extraInfo}>
+                <FormattedMessage id="ProfileSettingsForm.discountInfo"  />
+              </p> */}
+              <div className={classNames(css.sectionContainer, css.lastSection)}>
+                {filteredUserFields('discount').map(fieldProps => (
+                  <CustomExtendedDataField {...fieldProps} formId={formId} />
+                ))}
+              </div>
+              
+
               {submitError}
               <Button
                 className={css.submitButton}

@@ -1,5 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { arrayOf, bool, func, object, oneOfType, shape, string } from 'prop-types';
+import { compose } from 'redux';
+import { connect } from 'react-redux';
+
+// Added for delivery calculation functionality
+import { fetchTransactionLineItems } from './CheckoutPage.duck';
 
 // Import contexts and util modules
 import { FormattedMessage, intlShape } from '../../util/reactIntl';
@@ -9,6 +14,8 @@ import { ensureTransaction } from '../../util/data';
 import { createSlug } from '../../util/urlHelpers';
 import { isTransactionInitiateListingNotFoundError } from '../../util/errors';
 import { getProcess, isBookingProcessAlias } from '../../transactions/transaction';
+
+
 
 // Import shared components
 import { H3, H4, NamedLink, OrderBreakdown, Page } from '../../components';
@@ -50,8 +57,8 @@ const paymentFlow = (selectedPaymentMethod, saveAfterOnetimePayment) => {
   return selectedPaymentMethod === 'defaultCard'
     ? USE_SAVED_CARD
     : saveAfterOnetimePayment
-    ? PAY_AND_SAVE_FOR_LATER_USE
-    : ONETIME_PAYMENT;
+      ? PAY_AND_SAVE_FOR_LATER_USE
+      : ONETIME_PAYMENT;
 };
 
 /**
@@ -66,7 +73,7 @@ const paymentFlow = (selectedPaymentMethod, saveAfterOnetimePayment) => {
  * @param {Object} config app-wide configs. This contains hosted configs too.
  * @returns orderParams.
  */
-const getOrderParams = (pageData, shippingDetails, optionalPaymentParams, config, deliveryOrPickup, deliveryAddress, deliveryInstructions) => {
+const getOrderParams = (pageData, shippingDetails, optionalPaymentParams, config, deliveryOrPickup, deliveryAddress, deliveryInstructions, deliveryDistance) => {
   const quantity = pageData.orderData?.quantity;
   const quantityMaybe = quantity ? { quantity } : {};
   const deliveryMethod = pageData.orderData?.deliveryMethod;
@@ -83,6 +90,7 @@ const getOrderParams = (pageData, shippingDetails, optionalPaymentParams, config
       deliveryOrPickup,
       deliveryAddress,
       deliveryInstructions,
+      deliveryDistance: deliveryDistance,
     },
   };
 
@@ -93,6 +101,7 @@ const getOrderParams = (pageData, shippingDetails, optionalPaymentParams, config
     ...deliveryMethodMaybe,
     includeSaturday,
     includeSunday,
+    deliveryDistance,
     ...quantityMaybe,
     ...bookingDatesMaybe(pageData.orderData?.bookingDates),
     ...protectedDataMaybe,
@@ -102,6 +111,8 @@ const getOrderParams = (pageData, shippingDetails, optionalPaymentParams, config
 };
 
 const fetchSpeculatedTransactionIfNeeded = (orderParams, pageData, fetchSpeculatedTransaction) => {
+  console.log('pageData:', pageData);
+
   const tx = pageData ? pageData.transaction : null;
   const pageDataListing = pageData.listing;
   const processName =
@@ -170,7 +181,7 @@ export const loadInitialDataForStripePayments = ({
   const shippingDetails = {};
   const optionalPaymentParams = {};
   const orderParams = getOrderParams(pageData, shippingDetails, optionalPaymentParams, config);
-  // console.log('orderParams:', orderParams);
+  console.log('orderParams:', orderParams);
 
   fetchSpeculatedTransactionIfNeeded(orderParams, pageData, fetchSpeculatedTransaction);
 };
@@ -247,8 +258,9 @@ const handleSubmit = (values, process, props, stripe, submitting, setSubmitting)
     selectedPaymentFlow === USE_SAVED_CARD && hasDefaultPaymentMethodSaved
       ? { paymentMethod: stripePaymentMethodId }
       : selectedPaymentFlow === PAY_AND_SAVE_FOR_LATER_USE
-      ? { setupPaymentMethodForSaving: true }
-      : {};
+        ? { setupPaymentMethodForSaving: true }
+        : {};
+
 
   // These are the order parameters for the first payment-related transition
   // which is either initiate-transition or initiate-transition-after-enquiry
@@ -300,10 +312,12 @@ const onStripeInitialized = (stripe, process, props) => {
   }
 };
 
-export const CheckoutPageWithPayment = props => {
+const CheckoutPageWithPayment = props => {
   const [submitting, setSubmitting] = useState(false);
   // Initialized stripe library is saved to state - if it's needed at some point here too.
   const [stripe, setStripe] = useState(null);
+  const [deliveryDistance, setDeliveryDistance] = useState(null);
+
 
   const {
     scrollingDisabled,
@@ -323,7 +337,94 @@ export const CheckoutPageWithPayment = props => {
     listingTitle,
     title,
     config,
+    onFetchTransactionLineItems,
+    fetchSpeculatedTransaction
   } = props;
+
+  //   const handleSpeculation = () => {
+  //     const orderParams = { /* your order parameters */ };
+  //     const processAlias = 'your-process-alias';
+  //     const transactionId = null;  // or use an existing transaction ID
+  //     const transitionName = 'your-transition-name';
+  //     const isPrivilegedTransition = false;
+
+  //     dispatch(speculateTransaction(orderParams, processAlias, transactionId, transitionName, isPrivilegedTransition));
+  //   };
+
+  //   // ---
+
+
+  //     const processAlias = pageData.listing.attributes.publicData?.transactionProcessAlias;
+  //     const transactionId = pageData ? pageData.transactionid : null;
+  //     const transitionName = 'your-transition-name';
+  //     const isPrivilegedTransition = false;
+
+  // //----
+
+  const refreshSpeculatedTransaction = (distance) => {
+    if (distance !== null && pageData && config) {
+
+      //function to parse deliveryDistance from a string like this '115.79 km' to an integer of kms
+      const parseDeliveryDistance = (distance) => {
+        const distanceRegex = /(\d+(?:\.\d+)?)\s?(\w+)/;
+        const match = distance.match(distanceRegex);
+        if (match) {
+          const [, distanceValue, distanceUnit] = match;
+          if (distanceUnit === 'km') {
+            return parseInt(distanceValue);
+          }
+        }
+        return null;
+      };
+
+      console.log('Refreshing speculated transaction with distance:', distance);
+      console.log('pageData.orderData:', pageData.orderData);
+
+
+      const shippingDetails = {};
+      const optionalPaymentParams = {};
+      const orderParams = getOrderParams(pageData, shippingDetails, optionalPaymentParams, config);
+      console.log('orderParams:', orderParams);
+      const parsedDistance = parseDeliveryDistance(distance);
+      console.log('parsedDistance:', parsedDistance);
+      const newOrderParams = {
+        ...orderParams,
+        deliveryDistance: parsedDistance,
+        protectedData: {
+          deliveryAddress: "123 Example Street",
+          deliveryOrPickup : "delivery",
+        },
+      };
+      console.log('newOrderParams:', newOrderParams);
+      fetchSpeculatedTransactionIfNeeded(newOrderParams, pageData, fetchSpeculatedTransaction);
+
+
+      // // Create a newOrderData object with the deliveryDistance added to the object
+      // const newOrderData = {
+      //   bookingStart: pageData.orderData.bookingDates.bookingStart,
+      //   bookingEnd: pageData.orderData.bookingDates.bookingEnd,
+      //   includeSaturday: pageData.orderData.includeSaturday,
+      //   includeSunday: pageData.orderData.includeSunday,
+      //   deliveryDistance: parseDeliveryDistance(deliveryDistance),
+      // }
+      // console.log('newOrderData:', newOrderData);
+
+      // onFetchTransactionLineItems({
+      //   orderData: newOrderData,
+      //   listingId: pageData?.listing?.id,
+      //   isOwnListing: false,
+      // });
+
+    }
+  };
+
+  // useEffect(() => {
+  //   refreshSpeculatedTransaction();
+  // }, [deliveryDistance]);
+
+  // useEffect(() => {
+  //   console.log('pageData:', pageData);
+  // },[pageData]);
 
   // Since the listing data is already given from the ListingPage
   // and stored to handle refreshes, it might not have the possible
@@ -494,10 +595,13 @@ export const CheckoutPageWithPayment = props => {
                 marketplaceName={config.marketplaceName}
                 isBooking={isBookingProcessAlias(transactionProcessAlias)}
                 isFuzzyLocation={config.maps.fuzzy.enabled}
+                setDeliveryDistance={setDeliveryDistance}
+                refreshSpeculatedTransaction={refreshSpeculatedTransaction}
               />
             ) : null}
           </section>
         </div>
+        {/* <button onClick={() => refreshSpeculatedTransaction('10km')}>refreshSpeculatedTransaction("10km")</button> */}
 
         <DetailsSideCard
           listing={listing}
@@ -550,6 +654,7 @@ CheckoutPageWithPayment.propTypes = {
   onRetrievePaymentIntent: func.isRequired,
   onSavePaymentMethod: func.isRequired,
   onSendMessage: func.isRequired,
+  onFetchTransactionLineItems: func.isRequired,
   initiateOrderError: propTypes.error,
   confirmPaymentError: propTypes.error,
   // confirmCardPaymentError comes from Stripe so that's why we can't expect it to be in a specific form
@@ -573,5 +678,17 @@ CheckoutPageWithPayment.propTypes = {
     push: func.isRequired,
   }).isRequired,
 };
+// ... (rest of the existing code)
 
-export default CheckoutPageWithPayment;
+const mapDispatchToProps = dispatch => ({
+  onFetchTransactionLineItems: params => dispatch(fetchTransactionLineItems(params)),
+});
+
+const EnhancedCheckoutPageWithPayment = compose(
+  connect(
+    null,  // No mapStateToProps
+    mapDispatchToProps
+  )
+)(CheckoutPageWithPayment);
+
+export default EnhancedCheckoutPageWithPayment;

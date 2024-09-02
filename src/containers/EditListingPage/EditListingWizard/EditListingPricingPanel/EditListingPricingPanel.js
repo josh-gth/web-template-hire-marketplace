@@ -26,9 +26,16 @@ const getInitialValues = params => {
   ? new Money(deliveryPricePerKm.amount, deliveryPricePerKm.currency)
   : null;
 
+  const deliveryPriceMinimum = publicData?.deliveryPriceMinimum || null;
+  
+  const deliveryPriceMinimumAsMoney = deliveryPriceMinimum
+  ? new Money(deliveryPriceMinimum.amount, deliveryPriceMinimum.currency)
+  : null;
+
   return { 
     price,
-    deliveryPricePerKm: deliveryPricePerKmAsMoney,
+    deliveryPricePerKm: deliveryPricePerKmAsMoney ? deliveryPricePerKmAsMoney : null,
+    deliveryPriceMinimum: deliveryPriceMinimumAsMoney ? deliveryPriceMinimumAsMoney : null,
     deliveryWeight: publicData?.deliveryWeight,
     discountThreshold1: publicData?.discountThreshold1,
     discountPercentage1: publicData?.discountPercentage1,
@@ -90,6 +97,7 @@ const EditListingPricingPanel = props => {
           onSubmit={values => {
             const { price,
               deliveryPricePerKm = null,
+              deliveryPriceMinimum = null,
               deliveryWeight = null,
               discountThreshold1,
               discountPercentage1,
@@ -106,6 +114,7 @@ const EditListingPricingPanel = props => {
               price,
               publicData: {
                 deliveryPricePerKm: deliveryPricePerKm ? { amount: deliveryPricePerKm.amount, currency: deliveryPricePerKm.currency } : null,
+                deliveryPriceMinimum: deliveryPriceMinimum ? { amount: deliveryPriceMinimum.amount, currency: deliveryPriceMinimum.currency } : null,
                 deliveryWeight,
                 discountThreshold1,
                 discountPercentage1,

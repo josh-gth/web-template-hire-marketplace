@@ -6,29 +6,40 @@ import { Table, TableBody, TableCell, TableContainer, TableRow, Paper } from '@m
 import css from './ListingPage.module.css';
 
 const sortOrder = {
+  product_type: 1,
   manufacturer: 2,
   model: 3,
-  product_type: 1,
-  maximum_lift_capacity: 5,
-  maximum_lift_height: 6,
-  ground_clearance: 7,
-  lift_capacity_at_full_height: 8,
-  lift_capacity_at_full_reach: 9,
-  maximum_forward_reach: 10,
-  overall_height: 11,
-  overall_length: 12,
-  overall_weight_with_forks: 13,
-  overall_width: 14,
-  width_with_stabilizers_down: 15,
-  design_registration: 16,
-  double_checked: 17,
-  operator_manual: 18,
-  risk_assesment_manufacturer: 19,
-  risk_assesments_hirer: 20,
-  series: 21,
-  swms: 22,
-  brochure: 23,
+  fuel: 4,
+  non_marking_tyres: 5,
+  platform_height_m: 6,
+  working_height_m: 7,
+  platform_capacity_kg: 8,
+  platform_extension_m: 9,
+  platform_size: 10,
+  maximum_lift_capacity_kg: 11,
+  maximum_lift_height_m: 12,
+  ground_clearance_m: 13,
+  lift_capacity_at_full_height_kg: 14,
+  lift_capacity_at_full_reach_kg: 15,
+  maximum_forward_reach_m: 16,
+  height_m: 17,
+  length_m: 18,
+  weight_with_forks_kg: 19,
+  weight_kg: 20,
+  width_m: 21,
+  width_with_stabilizers_down_m: 22,
+  indoor_use_only: 23,
+  indoor_occupants: 24,
+  outdoor_occupants: 25,
+  design_registration: 26,
+  double_checked: 27,
+  operator_manual: 28,
+  risk_assesment_manufacturer: 29,
+  risk_assesments_hirer: 30,
+  series: 31,
+  swms: 32,
 };
+
 
 const hiddenAttributes = [
   'urls',
@@ -37,7 +48,8 @@ const hiddenAttributes = [
   'id',
   'family_id',
   'product_family',
-]; 
+  'brochure',
+];
 
 const formatAttributeName = (name) => {
   return name.split('_')
@@ -62,7 +74,7 @@ const formatAttributeWithUnits = (key, value) => {
   return {
     key: formatAttributeName(formattedKey),
     value: formattedValue,
-  };
+  }; ``
 };
 
 const ListingPageProductDetails = ({ productFamily, productId }) => {
@@ -76,7 +88,7 @@ const ListingPageProductDetails = ({ productFamily, productId }) => {
         .select('*')
         .eq('id', productId)
         .single();
-        
+
       if (error) {
         console.error('Error fetching product details:', error);
       } else {
@@ -101,6 +113,7 @@ const ListingPageProductDetails = ({ productFamily, productId }) => {
   return (
     <>
       {/* <button onClick={() => console.log('product:', productDetails)}>Log product details</button> */}
+      {/* <button onClick={() => console.log('sortedEntries:', sortedEntries)}>Log sorted entries</button> */}
       <TableContainer component={Paper} style={{ marginBottom: '20px' }}>
         <Table aria-label="product details table">
           <TableBody>
@@ -108,17 +121,27 @@ const ListingPageProductDetails = ({ productFamily, productId }) => {
               const { key: formattedKey, value: formattedValue } = formatAttributeWithUnits(key, value);
               return (
                 <TableRow key={key} >
-                  <TableCell component="th" scope="row" style={{paddingTop: "6px", paddingBottom: "6px"}}>
+                  <TableCell component="th" scope="row" style={{ paddingTop: "6px", paddingBottom: "6px" }}>
                     <p className={css.text}>
                       {formattedKey}
                     </p>
                   </TableCell>
-                  <TableCell align="right" style={{paddingTop: "6px", paddingBottom: "6px"}}>
+                  <TableCell align="right" style={{ paddingTop: "6px", paddingBottom: "6px" }}>
                     <p className={css.text}><strong>{formattedValue}</strong></p>
                   </TableCell>
                 </TableRow>
               );
             })}
+            <TableRow key={'brochure'} >
+              <TableCell component="th" scope="row" style={{ paddingTop: "6px", paddingBottom: "6px" }}>
+                <p className={css.text}>
+                  Brochure
+                </p>
+              </TableCell>
+              <TableCell align="right" style={{ paddingTop: "6px", paddingBottom: "6px" }}>
+                <a className={css.text} href={productDetails.brochure} target="_blank"><strong>Click to view</strong></a>
+              </TableCell>
+            </TableRow>
           </TableBody>
         </Table>
       </TableContainer>

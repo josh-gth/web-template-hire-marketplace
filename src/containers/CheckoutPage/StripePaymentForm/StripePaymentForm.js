@@ -12,6 +12,7 @@ import classNames from 'classnames';
 import { FormattedMessage, injectIntl, intlShape } from '../../../util/reactIntl';
 import { propTypes } from '../../../util/types';
 import { ensurePaymentMethodCard } from '../../../util/data';
+import { distanceBetweenAddresses } from '../../../util/api';
 
 import {
   Heading,
@@ -283,6 +284,7 @@ class StripePaymentForm extends Component {
     this.state = {
       ...initialState,
       deliveryOrPickup: '',
+      distanceBetweenAddresses: null,
     };
     this.updateBillingDetailsToMatchShippingAddress = this.updateBillingDetailsToMatchShippingAddress.bind(
       this
@@ -487,8 +489,10 @@ class StripePaymentForm extends Component {
     const submitDisabled =
       invalid ||
       onetimePaymentNeedsAttention ||
-      submitInProgress ||
-      (this.state.deliveryOrPickup === 'delivery' && !values.deliveryAddress);
+      submitInProgress;
+      
+      // (this.state.deliveryOrPickup === 'delivery' && !values.deliveryAddress);
+
 
     const hasCardError = this.state.error && !submitInProgress;
     const hasPaymentErrors = confirmCardPaymentError || confirmPaymentError;
@@ -571,18 +575,38 @@ class StripePaymentForm extends Component {
       console.log('handleAutocompleteLocationSelected triggered', values.deliveryAddress.selectedPlace.address);
     };
 
+    const handleCalculateDistance = (deliveryAddress, listingAddress) => {
+      distanceBetweenAddresses({ deliveryAddress, listingAddress })
+        .then(response => {
+          console.log('Response from distanceBetweenAddresses:', response);
+          console.log('response.data:', response.data);
+          const distance = response.data?.distance; // Access the distance from the nested response object
+          console.log('Distance between addresses:', distance);
+          console.log('deliveryOrPickup:', this.state.deliveryOrPickup);
+          this.props.refreshSpeculatedTransaction(distance, this.state.deliveryOrPickup, deliveryAddress);
+          console.log('refreshSpeculatedTransaction:', this.props.refreshSpeculatedTransaction);
+          // this.setState({ distanceBetweenAddresses: distance });
+          // this.props.setDeliveryDistance(this.state.distanceBetweenAddresses);
+        })
+        .catch(error => {
+          console.error('Error fetching distance:', error);
+        });
+    };
+
+
     // useEffect to call handleAutocompleteLocationSelected when the user selects a location from the autocomplete
     useEffect(() => {
-      if (values.deliveryAddress) {
-      if (values.deliveryAddress.selectedPlace) {
-        handleAutocompleteLocationSelected();
+      if (values.deliveryAddress && values.deliveryAddress.selectedPlace && listingLocation && listingLocation.address) {
+        handleCalculateDistance(values.deliveryAddress.selectedPlace.address, listingLocation.address);
       }
-    }
-    },[values]);
+    }, [values.deliveryAddress, listingLocation]);
+
 
     return hasStripeKey ? (
       <Form className={classes} onSubmit={handleSubmit} enforcePagePreloadFor="OrderDetailsPage">
-        <button onClick={() => console.log('values', values)}>Log Values</button>
+        {/* <button onClick={() => console.log('values', values)}>Log Values</button> */}
+        {/* <button onClick={() => console.log('listingLocation', listingLocation)}>Log listingLocation</button> */}
+
         <LocationOrShippingDetails
           askShippingDetails={askShippingDetails}
           showPickUplocation={showPickUplocation}
@@ -597,15 +621,16 @@ class StripePaymentForm extends Component {
         {showInitialMessageInput ? (
           <div>
             <Heading as="h3" rootClassName={css.heading}>
-              <FormattedMessage id="StripePaymentForm.messageHeading" />
+              <FormattedMessage id="StripePaymentForm.deliveryHeading" />
             </Heading>
 
             <FieldSelect
               id={`${formId}-deliveryOrPickup`}
               name="deliveryOrPickup"
               label="Delivery Method"
-              validate={required}
+              // validate={required}
               onChange={(value) => this.setState({ deliveryOrPickup: value })} // Handle delivery method change
+              style={{ marginBottom: '24px' }}
             >
               <option disabled value="">
                 Select delivery method
@@ -640,12 +665,14 @@ class StripePaymentForm extends Component {
                   useDefaultPredictions={false}
                   format={identity}
                   valueFromForm={values.location}
-                  validate={composeValidators(
-                    autocompleteSearchRequired(addressRequiredMessage),
-                    autocompletePlaceSelected(addressNotRecognizedMessage)
-                  )}
-                  
+                  // validate={composeValidators(
+                  //   autocompleteSearchRequired(addressRequiredMessage),
+                  //   autocompletePlaceSelected(addressNotRecognizedMessage)
+                  // )}
                 />
+                {this.state.deliveryOrPickup === 'delivery' && this.state.distanceBetweenAddresses ? (
+                  <p>Distance: {this.state.distanceBetweenAddresses}</p>
+                ) : null}
                 <FieldTextInput
                   type="textarea"
                   id={`${formId}-deliveryInstructions`}
@@ -654,12 +681,17 @@ class StripePaymentForm extends Component {
                   placeholder="Delivery Instructions"
                   className={css.deliveryInstructions}
                 />
+
               </>
             ) : this.state.deliveryOrPickup === 'pickup' ? (
               <p className={css.pickupMessage}>
                 Exact pickup address and pickup instructions will be available after your booking is confirmed.
               </p>
             ) : null}
+            
+            <Heading as="h3" rootClassName={css.heading}>
+              <FormattedMessage id="StripePaymentForm.messageHeading" />
+            </Heading>
 
             <FieldTextInput
               type="textarea"

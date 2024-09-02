@@ -1,5 +1,5 @@
 import pick from 'lodash/pick';
-import { initiatePrivileged, transitionPrivileged } from '../../util/api';
+import { initiatePrivileged, transitionPrivileged, transactionLineItems } from '../../util/api';
 import { denormalisedResponseEntities } from '../../util/data';
 import { storableError } from '../../util/errors';
 import * as log from '../../util/log';
@@ -28,6 +28,10 @@ export const STRIPE_CUSTOMER_ERROR = 'app/CheckoutPage/STRIPE_CUSTOMER_ERROR';
 export const INITIATE_INQUIRY_REQUEST = 'app/CheckoutPage/INITIATE_INQUIRY_REQUEST';
 export const INITIATE_INQUIRY_SUCCESS = 'app/CheckoutPage/INITIATE_INQUIRY_SUCCESS';
 export const INITIATE_INQUIRY_ERROR = 'app/CheckoutPage/INITIATE_INQUIRY_ERROR';
+
+export const FETCH_LINE_ITEMS_REQUEST = 'app/ListingPage/FETCH_LINE_ITEMS_REQUEST';
+export const FETCH_LINE_ITEMS_SUCCESS = 'app/ListingPage/FETCH_LINE_ITEMS_SUCCESS';
+export const FETCH_LINE_ITEMS_ERROR = 'app/ListingPage/FETCH_LINE_ITEMS_ERROR';
 
 // ================ Reducer ================ //
 
@@ -177,6 +181,17 @@ export const initiateInquiryError = e => ({
   type: INITIATE_INQUIRY_ERROR,
   error: true,
   payload: e,
+});
+
+export const fetchLineItemsRequest = () => ({ type: FETCH_LINE_ITEMS_REQUEST });
+export const fetchLineItemsSuccess = lineItems => ({
+  type: FETCH_LINE_ITEMS_SUCCESS,
+  payload: lineItems,
+});
+export const fetchLineItemsError = error => ({
+  type: FETCH_LINE_ITEMS_ERROR,
+  error: true,
+  payload: error,
 });
 
 /* ================ Thunks ================ */
@@ -369,6 +384,23 @@ export const initiateInquiryWithoutPayment = (inquiryParams, processAlias, trans
     .catch(e => {
       dispatch(initiateInquiryError(storableError(e)));
       throw e;
+    });
+};
+
+//Added by Josh to be able to add delivery line item at checkout
+export const fetchTransactionLineItems = ({ orderData, listingId, isOwnListing }) => dispatch => {
+  dispatch(fetchLineItemsRequest());
+  transactionLineItems({ orderData, listingId, isOwnListing })
+    .then(response => {
+      const lineItems = response.data;
+      dispatch(fetchLineItemsSuccess(lineItems));
+    })
+    .catch(e => {
+      dispatch(fetchLineItemsError(storableError(e)));
+      log.error(e, 'fetching-line-items-failed', {
+        listingId: listingId.uuid,
+        orderData,
+      });
     });
 };
 

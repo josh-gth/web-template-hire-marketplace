@@ -144,3 +144,9 @@ export const transitionPrivileged = body => {
 export const createUserWithIdp = body => {
   return post('/api/auth/create-user-with-idp', body);
 };
+
+// Fetch distance between two addresses using Mapbox
+export const distanceBetweenAddresses = body => {
+  console.log('body:', body);
+  return post('/api/distance-between-addresses', body);
+};
