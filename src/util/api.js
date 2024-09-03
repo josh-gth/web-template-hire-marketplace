@@ -150,3 +150,9 @@ export const distanceBetweenAddresses = body => {
   console.log('body:', body);
   return post('/api/distance-between-addresses', body);
 };
+
+// Generate a listing description using OpenAI
+export const generateListingDescription = body => {
+  console.log('body:', body);
+  return post('/api/openai-listing-description', body);
+};

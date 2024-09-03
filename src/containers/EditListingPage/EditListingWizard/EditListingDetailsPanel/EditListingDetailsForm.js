@@ -6,12 +6,16 @@ import { compose } from 'redux';
 import { Field, Form as FinalForm } from 'react-final-form';
 import arrayMutators from 'final-form-arrays';
 import classNames from 'classnames';
+import { CircularProgress, Icon, IconButton, Stack } from '@mui/material';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 
 // Import util modules
 import { intlShape, injectIntl, FormattedMessage } from '../../../../util/reactIntl';
 import { EXTENDED_DATA_SCHEMA_TYPES, propTypes } from '../../../../util/types';
 import { isFieldForCategory, isFieldForListingType } from '../../../../util/fieldHelpers';
 import { maxLength, required, composeValidators } from '../../../../util/validators';
+import { generateListingDescription } from '../../../../util/api';
+
 
 // Import shared components
 import {
@@ -224,9 +228,9 @@ const FieldSelectCategory = props => {
   // If a parent category changes, clear all child category values
   const handleCategoryChange = (category, level, currentCategoryOptions) => {
     handleProductSelect('');
-    console.log('handleCategoryChange triggered with:', category);
+    // console.log('handleCategoryChange triggered with:', category);
     const selectedCatLenght = countSelectedCategories();
-    console.log('category:', category);
+    // console.log('category:', category);
     if (level < selectedCatLenght) {
       for (let i = selectedCatLenght; i > level; i--) {
         formApi.change(`${prefix}${i}`, null);
@@ -296,9 +300,10 @@ const EditListingDetailsFormComponent = props => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [productFamily, setProductFamily] = useState('');
   const [productData, setProductData] = useState({});
+  const [descriptionLoading, setDescriptionLoading] = useState(false);
 
   const handleProductSelect = (id) => {
-    console.log('handleProductSelect triggered with:', id);
+    // console.log('handleProductSelect triggered with:', id);
     setProductId(id);
   };
 
@@ -349,16 +354,19 @@ const EditListingDetailsFormComponent = props => {
         }, [values]);
 
 
-        // Update form fields with product data from product library selection
+       // Update form fields with product data from product library selection
         useEffect(() => {
-          console.log('productData effect triggered with:', productData);
+          // console.log('productData effect triggered with:', productData);
 
           if (productData) {
-            console.log('listingFieldsConfig:', listingFieldsConfig);
+            // console.log('listingFieldsConfig:', listingFieldsConfig);
             listingFieldsConfig.forEach(field => {
               if (field.key !== `product_id`) {
                 formApi.change(`pub_${field.key}`, null);
-                console.log(`pub_${field.key} set to null:`);
+                // console.log(`pub_${field.key} set to null:`);
+              }
+              if (productData && productData.manufacturer && productData.model) {
+                formApi.change('title', productData.manufacturer + ' - ' + productData.model);
               }
             });
 
@@ -382,12 +390,12 @@ const EditListingDetailsFormComponent = props => {
 
                       if (isNaN(valueToSet)) { // Check if conversion was successful
                         throw new Error(`Failed to convert value for ${namespacedKey} to a number.`);
-                      }
+                      } 
                     }
 
                     // Multiply by 100 if the key ends in '_m' to convert from metres to centimetres
                     if (key.endsWith('_m') && typeof valueToSet === 'number') {
-                      valueToSet = valueToSet * 100;
+                      valueToSet = Math.round(valueToSet * 100);
                       console.log(`Converted ${key} value to centimetres: ${valueToSet}`);
                     }
 
@@ -412,6 +420,31 @@ const EditListingDetailsFormComponent = props => {
           setProductId(values.pub_product_id);
           console.log('ProductId Set:', values.pub_product_id);
         }, []);
+
+        const handleGenerateDescription = () => {
+          console.log('handleGenerateDescription triggered');
+          setDescriptionLoading(true);
+          if (productData && productData.manufacturer && productData.model) {
+            const manufacturer = productData.manufacturer;
+            const model = productData.model;
+            const productFamily = values.categoryLevel1;
+            console.log('handleGenerateDescription with:', productFamily + ' - ' + manufacturer + ' - ' + model);
+            generateListingDescription({ manufacturer, model, productFamily })
+              .then(response => {
+                console.log('Response from generateListingDescription:', response);
+                console.log('response.data:', response.data);
+                setDescriptionLoading(false);
+                if (response.data.description) {
+                  formApi.change('description', response.data.description);
+                }
+              })
+              .catch(error => {
+                console.error('Error generating description:', error);
+                setDescriptionLoading(false);
+              })
+          }
+
+        };
 
         const { listingType, transactionProcessAlias, unitType } = values;
         const [allCategoriesChosen, setAllCategoriesChosen] = useState(false);
@@ -501,21 +534,26 @@ const EditListingDetailsFormComponent = props => {
             ) : null}
 
             {showDescription ? (
-              <FieldTextInput
-                id={`${formId}description`}
-                name="description"
-                className={css.description}
-                type="textarea"
-                label={intl.formatMessage({ id: 'EditListingDetailsForm.description' })}
-                placeholder={intl.formatMessage({
-                  id: 'EditListingDetailsForm.descriptionPlaceholder',
-                })}
-                validate={required(
-                  intl.formatMessage({
-                    id: 'EditListingDetailsForm.descriptionRequired',
-                  })
-                )}
-              />
+              <Stack direction="row" spacing={2} alignItems="center" className={css.descriptionContainer}>
+                <FieldTextInput
+                  id={`${formId}description`}
+                  name="description"
+                  className={css.description}
+                  type="textarea"
+                  label={intl.formatMessage({ id: 'EditListingDetailsForm.description' })}
+                  placeholder={intl.formatMessage({
+                    id: 'EditListingDetailsForm.descriptionPlaceholder',
+                  })}
+                  validate={required(
+                    intl.formatMessage({
+                      id: 'EditListingDetailsForm.descriptionRequired',
+                    })
+                  )}
+                />
+                <IconButton className={css.iconButton} aria-label="Generate description" onClick={() => handleGenerateDescription()} disabled={descriptionLoading}>
+                  <AutoAwesomeIcon />
+                </IconButton>
+              </Stack>
             ) : null}
 
             {showListingFields ? (

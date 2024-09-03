@@ -33,9 +33,17 @@
   composes: formMargins;
 }
 
-.description {
+.descriptionContainer {
   composes: formMargins;
   flex-shrink: 0;
+}
+
+.description {
+  flex-grow: 1;
+}
+
+.iconButton {
+  margin-top: 32px;
 }
 
 .listingTypeSelect {
@@ -49,6 +57,7 @@
 .selectedLabel {
   composes: label from global;
 }
+
 .selectedValue {
   margin-top: 0;
   margin-bottom: 6px;
