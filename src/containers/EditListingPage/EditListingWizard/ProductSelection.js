@@ -49,6 +49,11 @@ const ProductSelection = ({ onProductSelect, productFamily, productId, setProduc
     }
   };
 
+  const HelperText = () => (
+    <span>Can't find the model you are looking for? <a href='https://form.jotform.com/242480835556059' target='_blank' rel='noreferrer'>Request that we add it to our Product Library.</a>
+  </span>
+  ); 
+  
   return (
     <Stack spacing={5} sx={{ mb: 4 }}>
       <Autocomplete
@@ -57,7 +62,7 @@ const ProductSelection = ({ onProductSelect, productFamily, productId, setProduc
         getOptionLabel={(option) => `${option.manufacturer} - ${option.model}`}
         value={selectedProduct}
         onChange={handleProductChange}
-        renderInput={(params) => <TextField {...params} label="Product" variant="outlined" fullWidth required />}
+        renderInput={(params) => <TextField {...params} label="Product" variant="outlined" helperText={<HelperText />} fullWidth required />}
         renderOption={(props, option) => (
           <li {...props} key={option.id}>
             {option.manufacturer} - {option.model}
