@@ -114,7 +114,7 @@ const ListingPageProductDetails = ({ productFamily, productId }) => {
     <>
       {/* <button onClick={() => console.log('product:', productDetails)}>Log product details</button> */}
       {/* <button onClick={() => console.log('sortedEntries:', sortedEntries)}>Log sorted entries</button> */}
-      <TableContainer component={Paper} style={{ marginBottom: '20px' }}>
+      <TableContainer className={css.productSpecs} component={Paper} style={{ marginBottom: '20px' }}>
         <Table aria-label="product details table">
           <TableBody>
             {sortedEntries.map(([key, value]) => {

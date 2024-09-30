@@ -452,6 +452,9 @@ const EditListingDetailsFormComponent = props => {
         const titleRequiredMessage = intl.formatMessage({
           id: 'EditListingDetailsForm.titleRequired',
         });
+        const locationRequiredMessage = intl.formatMessage({
+          id: 'EditListingDetailsForm.locationRequired',
+        });
         const maxLengthMessage = intl.formatMessage(
           { id: 'EditListingDetailsForm.maxLength' },
           {
@@ -532,6 +535,17 @@ const EditListingDetailsFormComponent = props => {
                 autoFocus={autoFocus}
               />
             ) : null}
+
+              {/* <FieldTextInput
+                id={`${formId}location`}
+                name="location"
+                className={css.title}
+                type="text"
+                label={intl.formatMessage({ id: 'EditListingDetailsForm.location' })}
+                placeholder={intl.formatMessage({ id: 'EditListingDetailsForm.locationPlaceholder' })}
+                maxLength={TITLE_MAX_LENGTH}
+                validate={composeValidators(required(locationRequiredMessage), maxLength60Message)}
+              /> */}
 
             {showDescription ? (
               <Stack direction="row" spacing={2} alignItems="center" className={css.descriptionContainer}>

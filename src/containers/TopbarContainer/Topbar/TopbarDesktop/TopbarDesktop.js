@@ -159,13 +159,14 @@ const TopbarDesktop = props => {
         alt={intl.formatMessage({ id: 'TopbarDesktop.logo' }, { marketplaceName })}
         linkToExternalSite={config?.topbar?.logoLink}
       />
-      <TopbarSearchForm
+      {/* <TopbarSearchForm
         className={classNames(css.searchLink, { [css.takeAvailableSpace]: giveSpaceForSearch })}
         desktopInputRoot={css.topbarSearchWithLeftPadding}
         onSubmit={onSearchSubmit}
         initialValues={initialSearchFormValues}
         appConfig={config}
-      />
+      /> */}
+      <div className={classNames(css.searchLink, { [css.takeAvailableSpace]: giveSpaceForSearch })}>  </div>
 
       <CustomLinksMenu
         currentPage={currentPage}

@@ -11,6 +11,11 @@ const GalleryContainer = styled.div`
   border-radius: 10px;
   overflow: hidden;
   gap: 10px; /* Add padding between images */
+  max-width: 100vw;
+    @media (max-width: 768px) {
+    max-width: calc(100vw - 24px);
+    margin: 12px;
+  }
 `;
 
 const MainImage = styled.div`

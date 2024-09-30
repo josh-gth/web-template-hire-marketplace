@@ -744,3 +744,11 @@
     flex-shrink: 0;
   }
 }
+
+.productSpecs {
+  @media (max-width: 768px) {
+   max-width: calc(100vw - 24px);
+   margin-left: 12px;
+   margin-right: 12px;
+  }
+}
