@@ -285,6 +285,7 @@ const AddListingFields = props => {
             id: 'EditListingDetailsForm.defaultRequiredMessage',
           })}
           formId={formId}
+          disabled={namespacedKey === 'pub_year' ? false : true} // Disable all custom fields except for year (Year of Manufacture)
         />,
       ]
       : pickedFields;
@@ -361,7 +362,7 @@ const EditListingDetailsFormComponent = props => {
           if (productData) {
             // console.log('listingFieldsConfig:', listingFieldsConfig);
             listingFieldsConfig.forEach(field => {
-              if (field.key !== `product_id`) {
+              if (field.key !== `product_id` && field.key !== `year`) {
                 formApi.change(`pub_${field.key}`, null);
                 // console.log(`pub_${field.key} set to null:`);
               }
@@ -371,6 +372,7 @@ const EditListingDetailsFormComponent = props => {
             });
 
             Object.keys(productData).forEach(key => {
+              
               const namespacedKey = `pub_${key}`;
               if (values[namespacedKey] !== undefined && values[namespacedKey] !== `pub_product_id`) { // Ensure the form has this field
                 const fieldConfig = listingFieldsConfig.find(field => {

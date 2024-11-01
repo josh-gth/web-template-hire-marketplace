@@ -107,8 +107,8 @@ export const EditListingPricingFormComponent = props => {
             // console.log('Setting deliveryPricePerKm to', publicData.defaultDeliveryRate);
             // console.log('Setting deliveryPriceMinimum to', publicData.defaultDeliveryPriceMinimum);
 
-            const formattedDeliveryRate = new Money(publicData.defaultDeliveryRate*100, marketplaceCurrency);
-            const formattedDeliveryPriceMinimum = new Money(publicData.defaultDeliveryPriceMinimum*100, marketplaceCurrency);
+            const formattedDeliveryRate = new Money(publicData.defaultDeliveryRate * 100, marketplaceCurrency);
+            const formattedDeliveryPriceMinimum = new Money(publicData.defaultDeliveryPriceMinimum * 100, marketplaceCurrency);
 
             console.log('formattedDeliveryRate:', formattedDeliveryRate);
             console.log('formattedDeliveryPriceMinimum:', formattedDeliveryPriceMinimum);
@@ -194,7 +194,7 @@ export const EditListingPricingFormComponent = props => {
               className={css.input}
               label={intl.formatMessage({ id: 'EditListingPricingForm.deliveryWeight' })}
               placeholder={intl.formatMessage({ id: 'EditListingPricingForm.deliveryWeightPlaceholder' })}
-              validate={required}
+              validate={validators.composeValidators(validators.required('This field is required'), validators.number('Must be a number'))}
             />
             {/* Currency field for Minimum Deliver Price */}
             <FieldCurrencyInput

@@ -30,6 +30,7 @@ const defaultDirectives = {
     '*.tiles.mapbox.com',
     'api.mapbox.com',
     'events.mapbox.com',
+    'https://pluonzqkwjcntayybiyl.supabase.co',
 
     // Google Analytics
     // TODO: Signals support needs more work

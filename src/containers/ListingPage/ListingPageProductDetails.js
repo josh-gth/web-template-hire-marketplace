@@ -8,36 +8,37 @@ import css from './ListingPage.module.css';
 const sortOrder = {
   product_type: 1,
   manufacturer: 2,
-  model: 3,
-  fuel: 4,
-  non_marking_tyres: 5,
-  platform_height_m: 6,
-  working_height_m: 7,
-  platform_capacity_kg: 8,
-  platform_extension_m: 9,
-  platform_size: 10,
-  maximum_lift_capacity_kg: 11,
-  maximum_lift_height_m: 12,
-  ground_clearance_m: 13,
-  lift_capacity_at_full_height_kg: 14,
-  lift_capacity_at_full_reach_kg: 15,
-  maximum_forward_reach_m: 16,
-  height_m: 17,
-  length_m: 18,
-  weight_with_forks_kg: 19,
-  weight_kg: 20,
-  width_m: 21,
-  width_with_stabilizers_down_m: 22,
-  indoor_use_only: 23,
-  indoor_occupants: 24,
-  outdoor_occupants: 25,
-  design_registration: 26,
-  double_checked: 27,
-  operator_manual: 28,
-  risk_assesment_manufacturer: 29,
-  risk_assesments_hirer: 30,
-  series: 31,
-  swms: 32,
+  year: 3,
+  model: 4,
+  fuel: 5,
+  non_marking_tyres: 6,
+  platform_height_m: 7,
+  working_height_m: 8,
+  platform_capacity_kg: 9,
+  platform_extension_m: 10,
+  platform_size: 11,
+  maximum_lift_capacity_kg: 12,
+  maximum_lift_height_m: 13,
+  ground_clearance_m: 14,
+  lift_capacity_at_full_height_kg: 15,
+  lift_capacity_at_full_reach_kg: 16,
+  maximum_forward_reach_m: 17,
+  height_m: 18,
+  length_m: 19,
+  weight_with_forks_kg: 20,
+  weight_kg: 21,
+  width_m: 22,
+  width_with_stabilizers_down_m: 23,
+  indoor_use_only: 24,
+  indoor_occupants: 25,
+  outdoor_occupants: 26,
+  design_registration: 27,
+  double_checked: 28,
+  operator_manual: 29,
+  risk_assesment_manufacturer: 30,
+  risk_assesments_hirer: 31,
+  series: 32,
+  swms: 33,
 };
 
 
@@ -77,7 +78,7 @@ const formatAttributeWithUnits = (key, value) => {
   }; ``
 };
 
-const ListingPageProductDetails = ({ productFamily, productId }) => {
+const ListingPageProductDetails = ({ productFamily, productId, publicData }) => {
   const { supabase } = useSupabase();
   const [productDetails, setProductDetails] = useState({});
 
@@ -88,19 +89,26 @@ const ListingPageProductDetails = ({ productFamily, productId }) => {
         .select('*')
         .eq('id', productId)
         .single();
-
+  
       if (error) {
         console.error('Error fetching product details:', error);
       } else {
-        setProductDetails(data);
-        console.log('Fetched product details:', data);
+        // Add publicData.year to productDetails object
+        const updatedProductDetails = {
+          ...data, // Original product details from Supabase
+          year: publicData?.year, // Add year from publicData if available
+        };
+  
+        setProductDetails(updatedProductDetails);
+        console.log('Fetched and updated product details:', updatedProductDetails);
       }
     };
-
+  
     if (productId) {
       fetchProductDetails();
     }
-  }, [supabase, productFamily, productId]);
+  }, [supabase, productFamily, productId, publicData]);
+  
 
   const sortedEntries = Object.entries(productDetails)
     .filter(([key]) => !hiddenAttributes.includes(key)) // Filter out hidden attributes
@@ -145,6 +153,8 @@ const ListingPageProductDetails = ({ productFamily, productId }) => {
           </TableBody>
         </Table>
       </TableContainer>
+      {/* <button onClick={() => console.log('publicData:', publicData)}>Log publicData</button>
+      <button onClick={() => console.log('productDetails:', productDetails)}>Log productDetails</button> */}
     </>
   );
 };

@@ -125,6 +125,10 @@ const parseNum = str => {
   return Number.isNaN(num) ? null : num;
 };
 
+export const number = message => value => {
+  return isNaN(value) ? message : VALID;
+};
+
 export const numberAtLeast = (message, minNumber) => value => {
   const valueNum = parseNum(value);
   return typeof valueNum === 'number' && valueNum >= minNumber ? VALID : message;

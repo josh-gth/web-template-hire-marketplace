@@ -17,6 +17,7 @@ const FieldSelectComponent = props => {
     meta,
     children,
     onChange,
+    disabled,
     ...rest
   } = props;
 
@@ -41,7 +42,7 @@ const FieldSelectComponent = props => {
     }
   };
 
-  const selectProps = { className: selectClasses, id, ...input, onChange: handleChange, ...rest };
+  const selectProps = { className: selectClasses, id, ...input, onChange: handleChange, disabled, ...rest };
 
   const classes = classNames(rootClassName || css.root, className);
   return (
@@ -60,9 +61,10 @@ FieldSelectComponent.defaultProps = {
   id: null,
   label: null,
   children: null,
+  disabled: false, // Default disabled to false
 };
 
-const { string, object, node } = PropTypes;
+const { string, object, node, bool } = PropTypes;
 
 FieldSelectComponent.propTypes = {
   rootClassName: string,
@@ -79,6 +81,7 @@ FieldSelectComponent.propTypes = {
   meta: object.isRequired,
 
   children: node,
+  disabled: bool // Add disabled to propTypes
 };
 
 const FieldSelect = props => {
