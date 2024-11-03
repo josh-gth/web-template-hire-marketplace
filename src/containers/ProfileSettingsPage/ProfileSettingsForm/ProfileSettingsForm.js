@@ -161,9 +161,9 @@ class ProfileSettingsFormComponent extends Component {
           const bioPlaceholder = intl.formatMessage({
             id: 'ProfileSettingsForm.bioPlaceholder',
           });
-          
 
-        
+
+
           const uploadingOverlay =
             uploadInProgress || this.state.uploadDelay ? (
               <div className={css.uploadingImageOverlay}>
@@ -251,10 +251,10 @@ class ProfileSettingsFormComponent extends Component {
           );
           console.log('userFieldProps:', userFieldProps);
 
-        //Function to filter out the userFeilds that's keys contain the word 'discount'
-        const filteredUserFields = (filter) => {
-          return userFieldProps.filter(userField => userField.key.includes(filter));
-        }
+          //Function to filter out the userFeilds that's keys contain the word 'discount'
+          const filteredUserFields = (filter) => {
+            return userFieldProps.filter(userField => userField.key.includes(filter));
+          }
 
           return (
             <Form
@@ -378,39 +378,44 @@ class ProfileSettingsFormComponent extends Component {
               </div>
 
               {/* Custom Defaults Section */}
-              <H3 as="h1" className={css.sectionTitle}>
-                <FormattedMessage id="ProfileSettingsForm.defaultsHeading" />
-              </H3>
-              <p className={css.extraInfo}>
-                <FormattedMessage id="ProfileSettingsForm.defaultsInfo"  />
-              </p>
+              {currentUser?.attributes?.profile?.publicData?.userType === 'supplier' && (
+                <>
+                  <H3 as="h1" className={css.sectionTitle}>
+                    <FormattedMessage id="ProfileSettingsForm.defaultsHeading" />
+                  </H3>
+                  {/* <button onClick={() => console.log('currentUser:', currentUser)}>Log currentUser</button> */}
+                  <p className={css.extraInfo}>
+                    <FormattedMessage id="ProfileSettingsForm.defaultsInfo" />
+                  </p>
 
-              {/* Delivery Fields Section */}
-              <H4 as="h2" className={css.sectionTitle}>
-                <FormattedMessage id="ProfileSettingsForm.deliveryHeading" />
-              </H4>
-              {/* <p className={css.extraInfo}>
+                  {/* Delivery Fields Section */}
+                  <H4 as="h2" className={css.sectionTitle}>
+                    <FormattedMessage id="ProfileSettingsForm.deliveryHeading" />
+                  </H4>
+                  {/* <p className={css.extraInfo}>
                 <FormattedMessage id="ProfileSettingsForm.deliveryInfo"  />
               </p> */}
-              <div className={classNames(css.sectionContainer, css.lastSection)}>
-                {filteredUserFields('Delivery').map(fieldProps => (
-                  <CustomExtendedDataField {...fieldProps} formId={formId} />
-                ))}
-              </div>
+                  <div className={classNames(css.sectionContainer, css.lastSection)}>
+                    {filteredUserFields('Delivery').map(fieldProps => (
+                      <CustomExtendedDataField {...fieldProps} formId={formId} />
+                    ))}
+                  </div>
 
-              {/* Discount Fields Section */}
-              <H4 as="h2" className={css.sectionTitle}>
-                <FormattedMessage id="ProfileSettingsForm.discountHeading" />
-              </H4>
-              {/* <p className={css.extraInfo}>
+                  {/* Discount Fields Section */}
+                  <H4 as="h2" className={css.sectionTitle}>
+                    <FormattedMessage id="ProfileSettingsForm.discountHeading" />
+                  </H4>
+                  {/* <p className={css.extraInfo}>
                 <FormattedMessage id="ProfileSettingsForm.discountInfo"  />
               </p> */}
-              <div className={classNames(css.sectionContainer, css.lastSection)}>
-                {filteredUserFields('discount').map(fieldProps => (
-                  <CustomExtendedDataField {...fieldProps} formId={formId} />
-                ))}
-              </div>
-              
+                  <div className={classNames(css.sectionContainer, css.lastSection)}>
+                    {filteredUserFields('discount').map(fieldProps => (
+                      <CustomExtendedDataField {...fieldProps} formId={formId} />
+                    ))}
+                  </div>
+                </>
+              )}
+
 
               {submitError}
               <Button
