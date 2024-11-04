@@ -249,7 +249,7 @@ class ProfileSettingsFormComponent extends Component {
             userTypeConfig?.userType,
             false
           );
-          console.log('userFieldProps:', userFieldProps);
+          // console.log('userFieldProps:', userFieldProps);
 
           //Function to filter out the userFeilds that's keys contain the word 'discount'
           const filteredUserFields = (filter) => {
@@ -378,12 +378,13 @@ class ProfileSettingsFormComponent extends Component {
               </div>
 
               {/* Custom Defaults Section */}
-              {currentUser?.attributes?.profile?.publicData?.userType === 'supplier' && (
+              {userTypeConfig?.userType === 'supplier' && (
                 <>
                   <H3 as="h1" className={css.sectionTitle}>
                     <FormattedMessage id="ProfileSettingsForm.defaultsHeading" />
                   </H3>
                   {/* <button onClick={() => console.log('currentUser:', currentUser)}>Log currentUser</button> */}
+                  {/* <button onClick={() => console.log('userTypeConfig:', userTypeConfig)}>Log userTypeConfig</button> */}
                   <p className={css.extraInfo}>
                     <FormattedMessage id="ProfileSettingsForm.defaultsInfo" />
                   </p>

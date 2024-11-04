@@ -100,7 +100,7 @@ const calculateContainerWidth = (containerRefTarget, parentWidth) => {
  * @param {*} props contains currentPage, customLinks, intl, and hasClientSideContentReady
  * @returns component to be placed inside TopbarDesktop
  */
-const CustomLinksMenu = ({ currentPage, customLinks = [], hasClientSideContentReady, intl }) => {
+const CustomLinksMenu = ({ currentPage, customLinks = [], hasClientSideContentReady, currentUser, intl }) => {
   const containerRef = useRef(null);
   const observer = useRef(null);
   const [mounted, setMounted] = useState(false);
@@ -170,7 +170,7 @@ const CustomLinksMenu = ({ currentPage, customLinks = [], hasClientSideContentRe
 
   // If there are no custom links, just render createListing link.
   if (customLinks?.length === 0) {
-    return <CreateListingMenuLink customLinksMenuClass={css.createListingLinkOnly} />;
+    return <CreateListingMenuLink customLinksMenuClass={css.createListingLinkOnly} currentUser={currentUser} />;
   }
 
   const styleMaybe = mounted ? { style: { width: `${containerWidth}px` } } : {};
@@ -180,7 +180,7 @@ const CustomLinksMenu = ({ currentPage, customLinks = [], hasClientSideContentRe
 
   return (
     <div className={css.customLinksMenu} ref={containerRef} {...styleMaybe}>
-      <PriorityLinks links={links} priorityLinks={priorityLinks} setLinks={setLinks} />
+      <PriorityLinks links={links} priorityLinks={priorityLinks} setLinks={setLinks} currentUser={currentUser} />
       {hasMenuLinks ? (
         <LinksMenu
           id="linksMenu"

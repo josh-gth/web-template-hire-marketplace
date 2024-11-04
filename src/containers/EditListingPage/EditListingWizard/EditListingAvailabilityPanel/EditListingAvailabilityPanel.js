@@ -142,13 +142,13 @@ const EditListingAvailabilityPanel = props => {
     type: 'availability-plan/time',
     timezone: defaultTimeZone(),
     entries: [
-      { dayOfWeek: 'mon', startTime: '09:00', endTime: '17:00', seats: 1 },
-      { dayOfWeek: 'tue', startTime: '09:00', endTime: '17:00', seats: 1 },
-      { dayOfWeek: 'wed', startTime: '09:00', endTime: '17:00', seats: 1 },
-      { dayOfWeek: 'thu', startTime: '09:00', endTime: '17:00', seats: 1 },
-      { dayOfWeek: 'fri', startTime: '09:00', endTime: '17:00', seats: 1 },
-      { dayOfWeek: 'sat', startTime: '09:00', endTime: '17:00', seats: 1 },
-      { dayOfWeek: 'sun', startTime: '09:00', endTime: '17:00', seats: 1 },
+      // { dayOfWeek: 'mon', startTime: '09:00', endTime: '17:00', seats: 1 },
+      // { dayOfWeek: 'tue', startTime: '09:00', endTime: '17:00', seats: 1 },
+      // { dayOfWeek: 'wed', startTime: '09:00', endTime: '17:00', seats: 1 },
+      // { dayOfWeek: 'thu', startTime: '09:00', endTime: '17:00', seats: 1 },
+      // { dayOfWeek: 'fri', startTime: '09:00', endTime: '17:00', seats: 1 },
+      // { dayOfWeek: 'sat', startTime: '09:00', endTime: '17:00', seats: 1 },
+      // { dayOfWeek: 'sun', startTime: '09:00', endTime: '17:00', seats: 1 },
     ],
   };
   const availabilityPlan = listingAttributes?.availabilityPlan || defaultAvailabilityPlan;
@@ -259,7 +259,7 @@ const EditListingAvailabilityPanel = props => {
             routeConfiguration={routeConfiguration}
             history={history}
           />
-          <button onClick={() => console.log('availabilityPlan:', availabilityPlan)}>Log availabilityPlan</button>
+          {/* <button onClick={() => console.log('availabilityPlan:', availabilityPlan)}>Log availabilityPlan</button> */}
 
           <section className={css.section}>
             <InlineTextButton

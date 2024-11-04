@@ -173,6 +173,7 @@ const TopbarDesktop = props => {
         customLinks={customLinks}
         intl={intl}
         hasClientSideContentReady={authenticatedOnClientSide || !isAuthenticatedOrJustHydrated}
+        currentUser={currentUser}
       />
 
       {inboxLinkMaybe}

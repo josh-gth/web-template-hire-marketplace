@@ -15,6 +15,12 @@ import css from './PriorityLinks.module.css';
  * @returns div with only one link inside.
  */
 export const CreateListingMenuLink = props => {
+  // console.log('props:', props);
+  const currentUserType = props.currentUser?.attributes?.profile?.publicData?.userType;
+  // console.log('currentUserType:', currentUserType);
+  // console.log('currentUserType = Supplier?', currentUserType == 'supplier');
+  // If the current user is a supplier, show the "Post a new listing" link
+  if (currentUserType == 'supplier') {
   return (
     <div className={props.customLinksMenuClass}>
       <NamedLink name="NewListingPage" className={classNames(css.priorityLink, css.highlight)}>
@@ -24,6 +30,10 @@ export const CreateListingMenuLink = props => {
       </NamedLink>
     </div>
   );
+}
+else {
+  return null;
+}
 };
 
 /**
