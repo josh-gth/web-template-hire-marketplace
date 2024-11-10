@@ -312,3 +312,28 @@
     width: 37.5vw;
   }
 }
+
+.mapWrapperDemo {
+  width: 100%;
+  height: 100%;
+}
+
+.mapDemo {
+  width: 100vw;
+  height: 100vh;
+
+  @media (--viewportMedium) {
+    /* Map is fixed so that it doesn't scroll along search results */
+    position: fixed;
+    top: var(--topbarHeightDesktop);
+    right: 0;
+
+    /* Fixed content needs width relative to viewport */
+    width: 100vw;
+    height: calc(100vh - var(--topbarHeightDesktop));
+  }
+
+  @media (--viewportLarge) {
+    width: 100vw;
+  }
+}
