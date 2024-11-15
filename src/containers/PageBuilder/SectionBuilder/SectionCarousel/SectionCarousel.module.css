@@ -39,8 +39,9 @@
   border-radius: 100%;
   border: none;
 
-  background-color: lightgrey;
-  opacity: 0.9;
+  background-color: var(--marketplaceColor);
+  /* background-color: lightgrey; */
+  opacity: 1;
   font-size: 30px;
   color: black;
   transition: all ease-in-out 100ms;
@@ -48,8 +49,9 @@
   &:hover {
     opacity: 1;
     cursor: pointer;
-    background: black;
-    color: white;
+    background-color: var(--marketplaceColor);
+    opacity: 0.9;
+    color: black;
   }
 }
 
