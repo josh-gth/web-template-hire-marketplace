@@ -5,6 +5,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@babel/runtime": "^7.17.9",
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@emotion/react": "^11.13.0",
     "@emotion/styled": "^11.13.0",
     "@loadable/component": "^5.15.2",
