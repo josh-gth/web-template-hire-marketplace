@@ -2226,14 +2226,14 @@
   resolved "https://registry.yarnpkg.com/@leichtgewicht/ip-codec/-/ip-codec-2.0.5.tgz#4fc56c15c580b9adb7dc3c333a134e540b44bfb1"
   integrity sha512-Vo+PSpZG2/fmgmiNzYK9qWRh8h/CHrwD0mo1h1DzL4yzHNSfWYujGTYsWGreD000gcgmZ7K4Ys6Tx9TxtsKdDw==
 
-"@loadable/babel-plugin@^5.13.2":
+"@loadable/babel-plugin@^5.16.1":
   version "5.16.1"
   resolved "https://registry.yarnpkg.com/@loadable/babel-plugin/-/babel-plugin-5.16.1.tgz#6d0aa6d4b26c5ae2e1a4469b05d77e0438874d96"
   integrity sha512-y+oKjRTt5XXf907ReFxiZyQtkYiIa4NAPQYlxb2qh5rUO/UsOKPq2PhCSHvfwoZOUJaMsY0FnoAPZ6lhFZkayQ==
   dependencies:
     "@babel/plugin-syntax-dynamic-import" "^7.7.4"
 
-"@loadable/component@^5.15.2":
+"@loadable/component@^5.15.2", "@loadable/component@^5.16.4":
   version "5.16.4"
   resolved "https://registry.yarnpkg.com/@loadable/component/-/component-5.16.4.tgz#583cb65945a5061ca3c6b90eb34835c154283ff4"
   integrity sha512-fJWxx9b5WHX90QKmizo9B+es2so8DnBthI1mbflwCoOyvzEwxiZ/SVDCTtXEnHG72/kGBdzr297SSIekYtzSOQ==
@@ -10953,15 +10953,15 @@ sharetribe-flex-sdk@^1.21.1:
     lodash "^4.17.10"
     transit-js "^0.8.861"
 
-sharetribe-scripts@6.0.1:
-  version "6.0.1"
-  resolved "https://registry.yarnpkg.com/sharetribe-scripts/-/sharetribe-scripts-6.0.1.tgz#0d7b3cc5b9f94945364c391a98e0846a88f89432"
-  integrity sha512-BRCs2PAyy6M4ZS03HEypvkX2r69i+eTnA3PJK1s02448rLtzbkZ7g8z5YRPgwVb8mhFxCKcEaNm1vFfWDd4kOg==
+sharetribe-scripts@6.0.2:
+  version "6.0.2"
+  resolved "https://registry.yarnpkg.com/sharetribe-scripts/-/sharetribe-scripts-6.0.2.tgz#7589afb43a3259252ff2a7de4b1260753ded7bed"
+  integrity sha512-bfFYj+qOqaxSVtPwf0Fh82BqurCEU6RzlmMc/9VDQSP/yinuP+ud4Sgml963K1AQQNU5oBA5v0CiMbwXWopqcw==
   dependencies:
     "@babel/core" "^7.16.0"
     "@babel/plugin-transform-runtime" "7.12.1"
-    "@loadable/babel-plugin" "^5.13.2"
-    "@loadable/component" "^5.15.2"
+    "@loadable/babel-plugin" "^5.16.1"
+    "@loadable/component" "^5.16.4"
     "@loadable/webpack-plugin" "^5.15.2"
     "@pmmmwh/react-refresh-webpack-plugin" "^0.5.3"
     "@svgr/webpack" "^5.5.0"
