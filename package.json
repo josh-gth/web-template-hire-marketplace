@@ -76,7 +76,8 @@
     "source-map-support": "^0.5.21",
     "styled-components": "^6.1.11",
     "unified": "^9.2.2",
-    "url": "^0.11.0"
+    "url": "^0.11.0",
+    "to-fast-properties": "^4.0.0"
   },
   "devDependencies": {
     "@babel/plugin-transform-private-property-in-object": "^7.25.9",
