@@ -329,11 +329,13 @@
     right: 0;
 
     /* Fixed content needs width relative to viewport */
+    /* width: 37.5vw; */
     width: 100vw;
     height: calc(100vh - var(--topbarHeightDesktop));
   }
 
   @media (--viewportLarge) {
+    /* width: 37.5vw; */
     width: 100vw;
   }
 }

@@ -97,31 +97,36 @@ export class SearchPageComponent extends Component {
         );
       };
 
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          position => {
-            const { latitude, longitude } = position.coords;
-            // Create a small bounding box around the user's location
-            const delta = 0.1; // Adjust this value as needed
-            const neLat = latitude + delta;
-            const neLng = longitude + delta;
-            const swLat = latitude - delta;
-            const swLng = longitude - delta;
+      const defaultBounds = '-9.22934224,160.93270973,-44.19011791,104.50192215';
+      setBounds(defaultBounds);
 
-            const bounds = `${neLat},${neLng},${swLat},${swLng}`;
-            setBounds(bounds);
-          },
-          error => {
-            // Geolocation request denied or error occurred
-            const defaultBounds = '-8.5072422,168.71039245,-49.43566257,100.49007324';
-            setBounds(defaultBounds);
-          }
-        );
-      } else {
-        // Geolocation not supported by the browser
-        const defaultBounds = '-8.5072422,168.71039245,-49.43566257,100.49007324';
-        setBounds(defaultBounds);
-      }
+      // Uncomment this to use browser user geolocation (Remove the 2 lines above as well)
+      // if (navigator.geolocation) {
+      //   navigator.geolocation.getCurrentPosition(
+      //     position => {
+      //       const { latitude, longitude } = position.coords;
+      //       // Create a small bounding box around the user's location
+      //       const delta = 0.1; // Adjust this value as needed
+      //       const neLat = latitude + delta;
+      //       const neLng = longitude + delta;
+      //       const swLat = latitude - delta;
+      //       const swLng = longitude - delta;
+
+      //       const bounds = `${neLat},${neLng},${swLat},${swLng}`;
+      //       setBounds(bounds);
+      //     },
+      //     error => {
+      //       // Geolocation request denied or error occurred
+      //       // const defaultBounds = '-33.74713438,151.34965726,-34.06981649,151.06806384';
+      //       const defaultBounds = '-9.22934224,160.93270973,-44.19011791,104.50192215';
+      //       setBounds(defaultBounds);
+      //     }
+      //   );
+      // } else {
+      //   // Geolocation not supported by the browser
+      //   // const defaultBounds = '-33.74713438,151.34965726,-34.06981649,151.06806384';
+      //   // setBounds(defaultBounds);
+      // }
     }
   }
 
@@ -132,7 +137,7 @@ export class SearchPageComponent extends Component {
     const { viewportBounds, viewportCenter } = data;
 
     const routes = this.props.routeConfiguration;
-    const searchPagePath = pathByRouteName('SearchPage', routes);
+    const searchPagePath = pathByRouteName('DemoSearchPage', routes);
     const currentPath =
       typeof window !== 'undefined' && window.location && window.location.pathname;
 
@@ -171,7 +176,7 @@ export class SearchPageComponent extends Component {
         ...validFilterParams(rest, filterConfigs, dropNonFilterParams),
       };
 
-      history.push(createResourceLocatorString('SearchPage', routes, {}, searchParams));
+      history.push(createResourceLocatorString('DemoSearchPage', routes, {}, searchParams));
     }
   }
 
@@ -203,7 +208,7 @@ export class SearchPageComponent extends Component {
     const searchParams = { ...urlQueryParams, ...this.state.currentQueryParams };
     const search = cleanSearchFromConflictingParams(searchParams, filterConfigs, sortConfig);
 
-    history.push(createResourceLocatorString('SearchPage', routeConfiguration, {}, search));
+    history.push(createResourceLocatorString('DemoSearchPage', routeConfiguration, {}, search));
   }
 
   // Close the filters by clicking cancel, revert to the initial params
@@ -225,7 +230,7 @@ export class SearchPageComponent extends Component {
 
     // Reset routing params
     const queryParams = omit(urlQueryParams, filterQueryParamNames);
-    history.push(createResourceLocatorString('SearchPage', routeConfiguration, {}, queryParams));
+    history.push(createResourceLocatorString('DemoSearchPage', routeConfiguration, {}, queryParams));
   }
 
   getHandleChangedValueFn(useHistoryPush) {
@@ -269,7 +274,7 @@ export class SearchPageComponent extends Component {
         if (useHistoryPush) {
           const searchParams = this.state.currentQueryParams;
           const search = cleanSearchFromConflictingParams(searchParams, filterConfigs, sortConfig);
-          history.push(createResourceLocatorString('SearchPage', routeConfiguration, {}, search));
+          history.push(createResourceLocatorString('DemoSearchPage', routeConfiguration, {}, search));
         }
       };
 
@@ -285,7 +290,7 @@ export class SearchPageComponent extends Component {
       ? { ...urlQueryParams, [urlParam]: values }
       : omit(urlQueryParams, urlParam);
 
-    history.push(createResourceLocatorString('SearchPage', routeConfiguration, {}, queryParams));
+    history.push(createResourceLocatorString('DemoSearchPage', routeConfiguration, {}, queryParams));
   }
 
   render() {

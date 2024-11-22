@@ -89,7 +89,7 @@ const routeConfiguration = (layoutConfig) => {
       loadData: pageDataLoadingAPI.SearchPage.loadData,
     },
     {
-      path: '/d',
+      path: '/demo',
       name: 'DemoSearchPage',
       component: SearchPageWithMapDemo ,
       loadData: pageDataLoadingAPI.SearchPage.loadData,

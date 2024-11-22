@@ -119,8 +119,8 @@ export class SearchPageComponent extends Component {
         );
       } else {
         // Geolocation not supported by the browser
-        const defaultBounds = '-33.74713438,151.34965726,-34.06981649,151.06806384';
-        setBounds(defaultBounds);
+        // const defaultBounds = '-33.74713438,151.34965726,-34.06981649,151.06806384';
+        // setBounds(defaultBounds);
       }
     }
   }
