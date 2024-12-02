@@ -16,6 +16,7 @@ const SearchFiltersPrimaryComponent = props => {
     isSecondaryFiltersOpen,
     toggleSecondaryFiltersOpen,
     selectedSecondaryFiltersCount,
+    hideMoreFiltersButton,
   } = props;
 
   const classes = classNames(rootClassName || css.root, className);
@@ -38,7 +39,7 @@ const SearchFiltersPrimaryComponent = props => {
     <div className={classes}>
       <div className={css.filters}>
         {children}
-        {toggleSecondaryFiltersOpenButton}
+        {hideMoreFiltersButton ? null : toggleSecondaryFiltersOpenButton }
       </div>
     </div>
   );

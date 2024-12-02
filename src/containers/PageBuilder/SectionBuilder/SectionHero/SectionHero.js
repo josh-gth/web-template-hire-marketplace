@@ -1,12 +1,16 @@
 import React from 'react';
 import { bool, func, node, object, shape, string, arrayOf } from 'prop-types';
 import classNames from 'classnames';
+import { useLocation } from 'react-router-dom';
 
 import Field, { hasDataInFields } from '../../Field';
 
 import SectionContainer from '../SectionContainer';
 import SectionHeroSearchForm from './SectionHeroSearchForm';
 import css from './SectionHero.module.css';
+
+// Define paths where the search form should appear
+const PATHS_WITH_SEARCH = ['/']; // Add more paths as needed
 
 const SectionHero = props => {
   const {
@@ -23,6 +27,13 @@ const SectionHero = props => {
     onSubmit,
     isMobile,
   } = props;
+
+  const location = useLocation();
+  const currentPath = location.pathname;
+  
+  // Check if search form should be shown on current path
+  const shouldShowSearch = PATHS_WITH_SEARCH.includes(currentPath) || 
+                         PATHS_WITH_SEARCH.some(path => currentPath.startsWith(path + '/'));
 
   const fieldComponents = options?.fieldComponents;
   const fieldOptions = { fieldComponents };
@@ -41,11 +52,13 @@ const SectionHero = props => {
         <header className={defaultClasses.sectionDetails}>
           <Field data={title} className={defaultClasses.title} options={fieldOptions} />
           <Field data={description} className={defaultClasses.description} options={fieldOptions} />
-          <SectionHeroSearchForm
-            appConfig={appConfig}
-            onSubmit={onSubmit}
-            isMobile={isMobile}
-          />
+          {shouldShowSearch && (
+            <SectionHeroSearchForm
+              appConfig={appConfig}
+              onSubmit={onSubmit}
+              isMobile={isMobile}
+            />
+          )}
           <Field data={callToAction} className={defaultClasses.ctaButton} options={fieldOptions} />
         </header>
       ) : null}
