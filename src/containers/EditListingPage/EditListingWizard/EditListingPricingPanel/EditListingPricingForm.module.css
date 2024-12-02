@@ -38,3 +38,12 @@
     margin-top: 100px;
   }
 }
+
+.deliveryHeading {
+  margin-bottom: 0;
+}
+
+.deliveryDescription {
+  margin-top: 0;
+  margin-bottom: 16px
+}

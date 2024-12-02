@@ -19,6 +19,9 @@ import { H3, H4, H5, H6, ListingLink } from '../../../../components';
 
 // Import modules from this directory
 import css from './EditListingPricingForm.module.css';
+import IconButton from '@mui/material/IconButton';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import Collapse from '@mui/material/Collapse';
 
 const { Money } = sdkTypes;
 
@@ -43,29 +46,40 @@ const getPriceValidators = (listingMinimumPriceSubUnits, marketplaceCurrency, in
 
 export const EditListingPricingFormComponent = props => {
   const [initialValuesSet, setInitialValuesSet] = useState(false);
+  const [showDeliveryInfo, setShowDeliveryInfo] = useState(false);
 
   // Initialize form with default values from props or current user
   const getInitialValues = () => {
     const { initialValues = {}, currentUser, weight } = props;
     const publicData = currentUser?.attributes?.profile?.publicData;
-    
+
     if (publicData) {
-      const defaultDeliveryRate = publicData.defaultDeliveryRate 
-        ? new Money(publicData.defaultDeliveryRate * 100, props.marketplaceCurrency)
-        : null;
-      
-      const defaultDeliveryPriceMinimum = publicData.defaultDeliveryPriceMinimum
-        ? new Money(publicData.defaultDeliveryPriceMinimum * 100, props.marketplaceCurrency)
-        : null;
+      // Only set default delivery rate if no value exists
+      const deliveryRate = initialValues.deliveryPricePerKm ||
+        (publicData.defaultDeliveryRate
+          ? new Money(publicData.defaultDeliveryRate * 100, props.marketplaceCurrency)
+          : null);
+
+      // Only set default minimum price if no value exists
+      const deliveryPriceMin = initialValues.deliveryPriceMinimum ||
+        (publicData.defaultDeliveryPriceMinimum
+          ? new Money(publicData.defaultDeliveryPriceMinimum * 100, props.marketplaceCurrency)
+          : null);
+
+      // Only set default weight if no value exists
+      const deliveryWeight = initialValues.deliveryWeight || weight;
 
       return {
         ...initialValues,
-        deliveryPricePerKm: defaultDeliveryRate,
-        deliveryPriceMinimum: defaultDeliveryPriceMinimum,
-        deliveryWeight: weight || undefined,
+        deliveryPricePerKm: deliveryRate,
+        deliveryPriceMinimum: deliveryPriceMin,
+        deliveryWeight: deliveryWeight,
       };
     }
-    return { ...initialValues, deliveryWeight: weight || undefined };
+    return {
+      ...initialValues,
+      deliveryWeight: initialValues.deliveryWeight || weight,
+    };
   };
 
   return (
@@ -98,43 +112,16 @@ export const EditListingPricingFormComponent = props => {
 
         // useEffect to set initial values for discount fields
         useEffect(() => {
-          console.log('=== Delivery Price Debug Logs ===');
-          console.log('Initial values:', initialValues);
-          console.log('Current user:', currentUser);
-          
-          if (currentUser?.attributes?.profile?.publicData) {
+          if (!initialValuesSet && currentUser?.attributes?.profile?.publicData) {
             const publicData = currentUser.attributes.profile.publicData;
-            console.log('Public Data:', publicData);
 
-            // Set discount fields
-            [1, 2, 3, 4].forEach(level => {
-              const thresholdField = `discountThreshold${level}`;
-              const percentageField = `discountPercentage${level}`;
-
-              if (!initialValues[thresholdField] && publicData[`discountDays${level}`]) {
-                formApi.change(thresholdField, publicData[`discountDays${level}`]);
-              }
-
-              if (!initialValues[percentageField] && publicData[`discountPercentage${level}`]) {
-                formApi.change(percentageField, publicData[`discountPercentage${level}`]);
-              }
-            });
-
-            // Only update delivery prices if they're not already set
-            const currentDeliveryRate = formApi.getState().values.deliveryPricePerKm;
-            const currentDeliveryMin = formApi.getState().values.deliveryPriceMinimum;
-
-            if (!currentDeliveryRate && publicData.defaultDeliveryRate) {
-              const formattedDeliveryRate = new Money(publicData.defaultDeliveryRate * 100, marketplaceCurrency);
-              formApi.change('deliveryPricePerKm', formattedDeliveryRate);
+            if (publicData.discountDays && publicData.discountPercentage) {
+              formApi.change('discountDays', publicData.discountDays);
+              formApi.change('discountPercentage', publicData.discountPercentage);
             }
-
-            if (!currentDeliveryMin && publicData.defaultDeliveryPriceMinimum) {
-              const formattedDeliveryPriceMinimum = new Money(publicData.defaultDeliveryPriceMinimum * 100, marketplaceCurrency);
-              formApi.change('deliveryPriceMinimum', formattedDeliveryPriceMinimum);
-            }
+            setInitialValuesSet(true);
           }
-        }, [currentUser, initialValues, formApi, marketplaceCurrency]);
+        }, [currentUser, formApi, initialValuesSet]);
 
         const priceValidators = getPriceValidators(
           listingMinimumPriceSubUnits,
@@ -166,6 +153,7 @@ export const EditListingPricingFormComponent = props => {
                 <FormattedMessage id="EditListingPricingForm.showListingFailed" />
               </p>
             ) : null}
+            
             <FieldCurrencyInput
               id={`${formId}price`}
               name="price"
@@ -179,7 +167,42 @@ export const EditListingPricingFormComponent = props => {
               currencyConfig={appSettings.getCurrencyFormatting(marketplaceCurrency)}
               validate={priceValidators}
             />
-            {/* < button onClick={() => console.log(currentUser.attributes.profile.publicData)}>Log currentUser.attributes.profile.publicData</button> */}
+            <H3 as="h2" className={css.deliveryHeading}>
+              <FormattedMessage
+                id="EditListingPricingPanel.deliveryTitle"
+                values={{}}
+              />
+              <IconButton 
+                aria-label="delivery info" 
+                onClick={() => setShowDeliveryInfo(!showDeliveryInfo)}
+                size="small"
+                style={{ marginLeft: '8px', marginBottom: '4px' }}
+              >
+                <HelpOutlineIcon fontSize="small" />
+              </IconButton>
+            </H3>
+            <Collapse in={showDeliveryInfo}>
+              <p className={css.deliveryDescription}>
+                <FormattedMessage
+                  id="EditListingPricingForm.deliveryPricePerKmDescription1"
+                />
+                <br />
+                <FormattedMessage
+                  id="EditListingPricingForm.deliveryPricePerKmDescription2"
+                />
+                <br />
+                <FormattedMessage
+                  id="EditListingPricingForm.deliveryPricePerKmDescription3"
+                />
+              </p>
+            </Collapse>
+            <a className={css.deliveryDescription} href="/profile-settings" target="_blank">
+              <FormattedMessage
+                id="EditListingPricingPanel.deliveryDefaults"
+                values={{ lineBreak: <br /> }}
+              />
+            </a>
+            
             {/* Currency field for delivery price per 1000kg/km */}
             <FieldCurrencyInput
               id={`${formId}deliveryPricePerKm`}
@@ -193,6 +216,7 @@ export const EditListingPricingFormComponent = props => {
               currencyConfig={appSettings.getCurrencyFormatting(marketplaceCurrency)}
               validate={required}
             />
+            
             {/* Weight field for delivery price per 1000kg/km */}
             <FieldTextInput
               id={`${formId}deliveryWeight`}
@@ -219,19 +243,12 @@ export const EditListingPricingFormComponent = props => {
               validate={required}
             />
 
-            <H3 as="h1">
+            <H3 as="h2">
               Duration Based Discounts
             </H3>
 
-            {/* <Typography variant="h5" component="h2" className={css.discountHeader}>
-              {`Duration Based Discounts`}
-            </Typography> */}
-
             {[1, 2, 3, 4].map(level => (
               <div key={level} style={{ marginTop: '0px', marginBottom: '12px' }}>
-                {/* <Typography variant="h6" component="h3" className={css.discountHeader}>
-                  {`Discount Level ${level}`}
-                </Typography> */}
                 <H4 as="h5">
                   {`Discount Level ${level}`}
                 </H4>
@@ -255,7 +272,6 @@ export const EditListingPricingFormComponent = props => {
                 </Stack>
               </div>
             ))}
-            {/* <button onClick={() => console.log('props:', props)}>Log props</button> */}
             <Button
               className={css.submitButton}
               type="submit"
