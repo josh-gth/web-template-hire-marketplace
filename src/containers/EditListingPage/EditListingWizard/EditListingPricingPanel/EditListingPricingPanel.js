@@ -137,6 +137,7 @@ const EditListingPricingPanel = props => {
           updated={panelUpdated}
           updateInProgress={updateInProgress}
           fetchErrors={errors}
+          weight={listing.attributes.publicData.weight_kg}
         />
       ) : (
         <div className={css.priceCurrencyInvalid}>

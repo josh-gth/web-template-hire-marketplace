@@ -44,9 +44,34 @@ const getPriceValidators = (listingMinimumPriceSubUnits, marketplaceCurrency, in
 export const EditListingPricingFormComponent = props => {
   const [initialValuesSet, setInitialValuesSet] = useState(false);
 
+  // Initialize form with default values from props or current user
+  const getInitialValues = () => {
+    const { initialValues = {}, currentUser, weight } = props;
+    const publicData = currentUser?.attributes?.profile?.publicData;
+    
+    if (publicData) {
+      const defaultDeliveryRate = publicData.defaultDeliveryRate 
+        ? new Money(publicData.defaultDeliveryRate * 100, props.marketplaceCurrency)
+        : null;
+      
+      const defaultDeliveryPriceMinimum = publicData.defaultDeliveryPriceMinimum
+        ? new Money(publicData.defaultDeliveryPriceMinimum * 100, props.marketplaceCurrency)
+        : null;
+
+      return {
+        ...initialValues,
+        deliveryPricePerKm: defaultDeliveryRate,
+        deliveryPriceMinimum: defaultDeliveryPriceMinimum,
+        deliveryWeight: weight || undefined,
+      };
+    }
+    return { ...initialValues, deliveryWeight: weight || undefined };
+  };
+
   return (
     <FinalForm
       {...props}
+      initialValues={getInitialValues()}
       render={formRenderProps => {
         const {
           formId,
@@ -68,67 +93,48 @@ export const EditListingPricingFormComponent = props => {
           form: formApi,
           initialValues,
           currentUser,
+          weight,
         } = formRenderProps;
 
         // useEffect to set initial values for discount fields
         useEffect(() => {
-          // console.log('useEffect triggered');
-          console.log('initialValuesSet:', initialValuesSet);
-
-          if (
-            !initialValuesSet &&
-            currentUser &&
-            currentUser.attributes &&
-            currentUser.attributes.profile &&
-            currentUser.attributes.profile.publicData
-          ) {
-            // console.log('Conditions met to set initial values');
+          console.log('=== Delivery Price Debug Logs ===');
+          console.log('Initial values:', initialValues);
+          console.log('Current user:', currentUser);
+          
+          if (currentUser?.attributes?.profile?.publicData) {
             const publicData = currentUser.attributes.profile.publicData;
+            console.log('Public Data:', publicData);
 
+            // Set discount fields
             [1, 2, 3, 4].forEach(level => {
               const thresholdField = `discountThreshold${level}`;
               const percentageField = `discountPercentage${level}`;
 
-              // console.log(`Processing discount fields for level ${level}`);
-              // console.log(`Threshold field ${thresholdField}:`, initialValues[thresholdField]);
-              // console.log(`Percentage field ${percentageField}:`, initialValues[percentageField]);
-
               if (!initialValues[thresholdField] && publicData[`discountDays${level}`]) {
-                console.log(`Setting ${thresholdField} to`, publicData[`discountDays${level}`]);
                 formApi.change(thresholdField, publicData[`discountDays${level}`]);
               }
 
               if (!initialValues[percentageField] && publicData[`discountPercentage${level}`]) {
-                console.log(`Setting ${percentageField} to`, publicData[`discountPercentage${level}`]);
                 formApi.change(percentageField, publicData[`discountPercentage${level}`]);
               }
             });
 
-            // console.log('Setting deliveryPricePerKm to', publicData.defaultDeliveryRate);
-            // console.log('Setting deliveryPriceMinimum to', publicData.defaultDeliveryPriceMinimum);
+            // Only update delivery prices if they're not already set
+            const currentDeliveryRate = formApi.getState().values.deliveryPricePerKm;
+            const currentDeliveryMin = formApi.getState().values.deliveryPriceMinimum;
 
-            const formattedDeliveryRate = new Money(publicData.defaultDeliveryRate * 100, marketplaceCurrency);
-            const formattedDeliveryPriceMinimum = new Money(publicData.defaultDeliveryPriceMinimum * 100, marketplaceCurrency);
+            if (!currentDeliveryRate && publicData.defaultDeliveryRate) {
+              const formattedDeliveryRate = new Money(publicData.defaultDeliveryRate * 100, marketplaceCurrency);
+              formApi.change('deliveryPricePerKm', formattedDeliveryRate);
+            }
 
-            console.log('formattedDeliveryRate:', formattedDeliveryRate);
-            console.log('formattedDeliveryPriceMinimum:', formattedDeliveryPriceMinimum);
-            console.log('publicData:', publicData);
-
-            // const priceRaw1 = new Money(100, marketplaceCurrency);
-            // formApi.change('price', formatMoney(intl, formattedDeliveryPriceMinimum) );
-            // formApi.change('deliveryWeight', 400);
-            formApi.change('deliveryPricePerKm', 100);
-            formApi.change('deliveryPriceMinimum', formattedDeliveryPriceMinimum);
-
-            // console.log('Initial values set, updating state');
-            setInitialValuesSet(true);
-          } else {
-            console.log('Conditions not met, skipping initial value setting');
+            if (!currentDeliveryMin && publicData.defaultDeliveryPriceMinimum) {
+              const formattedDeliveryPriceMinimum = new Money(publicData.defaultDeliveryPriceMinimum * 100, marketplaceCurrency);
+              formApi.change('deliveryPriceMinimum', formattedDeliveryPriceMinimum);
+            }
           }
-        }, [currentUser, initialValues, formApi, initialValuesSet]);
-
-
-
+        }, [currentUser, initialValues, formApi, marketplaceCurrency]);
 
         const priceValidators = getPriceValidators(
           listingMinimumPriceSubUnits,
@@ -176,7 +182,7 @@ export const EditListingPricingFormComponent = props => {
             {/* < button onClick={() => console.log(currentUser.attributes.profile.publicData)}>Log currentUser.attributes.profile.publicData</button> */}
             {/* Currency field for delivery price per 1000kg/km */}
             <FieldCurrencyInput
-              id={`${formId}price`}
+              id={`${formId}deliveryPricePerKm`}
               name="deliveryPricePerKm"
               className={css.input}
               label={intl.formatMessage(
@@ -192,13 +198,16 @@ export const EditListingPricingFormComponent = props => {
               id={`${formId}deliveryWeight`}
               name="deliveryWeight"
               className={css.input}
+              type="number"
               label={intl.formatMessage({ id: 'EditListingPricingForm.deliveryWeight' })}
               placeholder={intl.formatMessage({ id: 'EditListingPricingForm.deliveryWeightPlaceholder' })}
               validate={validators.composeValidators(validators.required('This field is required'), validators.number('Must be a number'))}
+              disabled={disabled}
+              value={weight}
             />
             {/* Currency field for Minimum Deliver Price */}
             <FieldCurrencyInput
-              id={`${formId}price`}
+              id={`${formId}deliveryPriceMinimum`}
               name="deliveryPriceMinimum"
               className={css.input}
               label={intl.formatMessage(
@@ -286,6 +295,7 @@ EditListingPricingFormComponent.propTypes = {
     showListingsError: propTypes.error,
     updateListingError: propTypes.error,
   }),
+  weight: number,
 };
 
 export default compose(injectIntl)(EditListingPricingFormComponent);
